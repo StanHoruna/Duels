@@ -1,0 +1,5 @@
+.idea
+firebase-auth.json
+.env
+redis.conf
+.data
