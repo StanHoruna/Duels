@@ -3,19 +3,19 @@ package apperrors
 import (
 	"errors"
 	"fmt"
-	"net/http"
 	"runtime"
+
+	"github.com/goccy/go-json"
 )
 
-type AppError struct {
-	BaseError       error
-	Message         string
-	HTTPStatus      int
-	FileErrOccurred string
-	LineErrOccurred int
+type Error struct {
+	BaseError error
+	Message   string
+	Status    int
+	path      string
 }
 
-func newAppError(httpStatus int, message string, err ...error) *AppError {
+func newError(httpStatus int, message string, err ...error) *Error {
 	var baseError error
 	if len(err) == 0 {
 		baseError = nil
@@ -23,87 +23,67 @@ func newAppError(httpStatus int, message string, err ...error) *AppError {
 		baseError = err[0]
 	}
 
-	var e *AppError
+	var e *Error
 	ok := errors.As(baseError, &e)
 	if ok {
-		return &AppError{
-			BaseError:       fmt.Errorf("%w: %w", baseError, e.BaseError),
-			Message:         e.Message,
-			HTTPStatus:      httpStatus,
-			FileErrOccurred: e.FileErrOccurred,
-			LineErrOccurred: e.LineErrOccurred,
-		}
+		return e.wrap(message, httpStatus)
 	}
 
-	_, fileErrOccurred, lineErrOccurred, ok := runtime.Caller(2)
-	if !ok {
-		fileErrOccurred = ""
-		lineErrOccurred = 0
+	var path string
+	if _, fileErrOccurred, lineErrOccurred, ok := runtime.Caller(2); ok {
+		path = fmt.Sprintf("%s:%d", fileErrOccurred, lineErrOccurred)
 	}
 
-	appErr := &AppError{
-		BaseError:       baseError,
-		Message:         message,
-		HTTPStatus:      httpStatus,
-		FileErrOccurred: fileErrOccurred,
-		LineErrOccurred: lineErrOccurred,
+	appErr := &Error{
+		BaseError: baseError,
+		Message:   message,
+		Status:    httpStatus,
+		path:      path,
 	}
 
 	return appErr
 }
 
-func (e *AppError) Error() string {
-	return e.Message
+type ErrorPublic struct {
+	Message string `json:"message"`
+	Status  int    `json:"status"`
 }
 
-func (e *AppError) Path() string {
-	return fmt.Sprintf("%s:%d", e.FileErrOccurred, e.LineErrOccurred)
+func (e *Error) Error() string {
+	if e == nil {
+		return "<nil>"
+	}
+
+	b, _ := json.Marshal(
+		&ErrorPublic{
+			Message: e.Message,
+			Status:  e.Status,
+		},
+	)
+
+	return string(b)
 }
 
-func IsAppError(err error) (*AppError, bool) {
-	var appErr *AppError
+func (e *Error) wrap(message string, httpStatus int) *Error {
+	if e == nil {
+		return newError(httpStatus, message)
+	}
+
+	return &Error{
+		BaseError: e.BaseError,
+		Message:   fmt.Sprintf("%s: %s", message, e.Message),
+		Status:    httpStatus,
+		path:      e.path,
+	}
+}
+
+func (e *Error) Path() string {
+	return e.path
+}
+
+func IsAppError(err error) (*Error, bool) {
+	var appErr *Error
 	ok := errors.As(err, &appErr)
 
 	return appErr, ok
-}
-
-func Unauthorized(message string, err ...error) error {
-	return newAppError(http.StatusUnauthorized, message, err...)
-}
-
-func Internal(message string, err ...error) error {
-	return newAppError(http.StatusInternalServerError, message, err...)
-}
-
-func BadRequest(message string, err ...error) error {
-	return newAppError(http.StatusBadRequest, message, err...)
-}
-
-func ServiceUnavailable(message string, err ...error) error {
-	return newAppError(http.StatusServiceUnavailable, message, err...)
-}
-
-const (
-	StatusLoginTimeout = 440
-)
-
-func LoginTimeout(message string, err ...error) error {
-	return newAppError(StatusLoginTimeout, message, err...)
-}
-
-func NotFound(message string, err ...error) error {
-	return newAppError(http.StatusNotFound, message, err...)
-}
-
-func AlreadyExist(message string, err ...error) error {
-	return newAppError(http.StatusConflict, message, err...)
-}
-
-// Teapot indicates that handler is a teapot and unable to brew a coffee
-func Teapot(message string, err ...error) error {
-	return newAppError(http.StatusTeapot, message, err...)
-}
-
-func TooManyRequests(message string, err ...error) error {
-	return newAppError(http.StatusTooManyRequests, message, err...)
 }

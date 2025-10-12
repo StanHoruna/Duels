@@ -4,10 +4,12 @@ import (
 	"duels-api/config"
 	"duels-api/pkg/apperrors"
 	"errors"
-	"github.com/gofiber/fiber/v3"
-	"go.uber.org/zap"
 	"net/http"
 	"time"
+
+	"github.com/gofiber/fiber/v3"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 func NewLoggingMiddleware(l *zap.Logger) *LogMiddleware {
@@ -40,7 +42,13 @@ func (h *LogMiddleware) LogRequests(c fiber.Ctx) error {
 	method := c.Method()
 	path := c.Path()
 
-	h.l.Info(
+	level := zapcore.InfoLevel
+	if status >= 400 {
+		level = zapcore.ErrorLevel
+	}
+
+	h.l.Log(
+		level,
 		"request",
 		zap.Int("status", status),
 		zap.String("latency", latency),
@@ -67,6 +75,7 @@ func (h *LogMiddleware) LogErrorsProduction(c fiber.Ctx) error {
 	appErr, ok := apperrors.IsAppError(err)
 	if !ok {
 		c.Status(http.StatusInternalServerError)
+		h.l.Error("unhandled error", zap.Error(err))
 		return fiber.NewError(http.StatusInternalServerError, "internal server error")
 	}
 
@@ -83,8 +92,8 @@ func (h *LogMiddleware) LogErrorsProduction(c fiber.Ctx) error {
 		)
 	}
 
-	c.Status(appErr.HTTPStatus)
-	return fiber.NewError(appErr.HTTPStatus, appErr.Message)
+	c.Status(appErr.Status)
+	return fiber.NewError(appErr.Status, appErr.Error())
 }
 
 func (h *LogMiddleware) LogErrorsDevelopment(c fiber.Ctx) error {
@@ -104,7 +113,8 @@ func (h *LogMiddleware) LogErrorsDevelopment(c fiber.Ctx) error {
 		h.l.Error(err.Error())
 		c.Status(http.StatusInternalServerError)
 
-		return fiber.NewError(http.StatusInternalServerError, "internal server error")
+		err = apperrors.Internal("internal server error")
+		return fiber.NewError(http.StatusInternalServerError, err.Error())
 	}
 
 	if appErr.BaseError != nil {
@@ -118,6 +128,6 @@ func (h *LogMiddleware) LogErrorsDevelopment(c fiber.Ctx) error {
 		)
 	}
 
-	c.Status(appErr.HTTPStatus)
-	return fiber.NewError(appErr.HTTPStatus, appErr.Message)
+	c.Status(appErr.Status)
+	return fiber.NewError(appErr.Status, appErr.Error())
 }

@@ -10,12 +10,16 @@ func Module() fx.Option {
 		fx.Provide(
 			NewAuthHandler,
 			NewUserHandler,
+			NewDuelHandler,
 		),
 		fx.Invoke(func(app *fiber.App, authHandler *AuthHandler) {
 			authHandler.RegisterRoutes(app)
 		}),
 		fx.Invoke(func(app *fiber.App, authHandler *AuthHandler, userHandler *UserHandler) {
 			userHandler.RegisterRoutes(app, authHandler)
+		}),
+		fx.Invoke(func(app *fiber.App, authHandler *AuthHandler, duelHandler *DuelHandler) {
+			duelHandler.RegisterRoutes(app, authHandler)
 		}),
 	)
 }

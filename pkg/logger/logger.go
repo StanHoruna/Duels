@@ -42,8 +42,7 @@ func InitLogger(c *config.Config) *zap.Logger {
 		}
 	}()
 
-	cfg := zap.NewProductionConfig()
-	zap.Must(cfg.Build())
+	zap.ReplaceGlobals(logger)
 
 	return logger
 }

@@ -51,6 +51,16 @@ type RedisConfig struct {
 }
 
 type AppConfig struct {
-	Environment   string `env:"ENVIRONMENT,required"`
-	SolanaNodeURL string `env:"SOLANA_NODE_URL,required"`
+	Environment        string `env:"ENVIRONMENT,required"`
+	SolanaNodeURL      string `env:"SOLANA_URL,required"`
+	SolanaWSNodeURL    string `env:"SOLANA_WS_URL,required"`
+	SolanaQuickNodeAPI string `env:"SOLANA_QUICKNODE_API,required"`
+
+	ShareImageAPI    string `env:"SHARE_IMAGE_API,required"`
+	USDCMintAddress  string `env:"USDC_MINT_ADDRESS,required"`
+	USDCMintDecimals uint8  `env:"USDC_MINT_DECIMALS,required"`
+
+	SolanaAdminPrivateKey string `env:"SOLANA_ADMIN_PRIVATE_KEY,required"`
+	ContractAddress       string `env:"CONTRACT_ADDRESS,required"`
+	ContractAddressApi    string `env:"CONTRACT_ADDRESS_API,required"`
 }

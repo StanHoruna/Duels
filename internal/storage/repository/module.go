@@ -28,6 +28,18 @@ func Module() fx.Option {
 			NewUserRepository,
 		),
 		fx.Provide(
+			repository.NewGenericRepository[model.Duel, uuid.UUID],
+			NewDuelRepository,
+		),
+		fx.Provide(
+			repository.NewGenericRepository[model.Player, uuid.UUID],
+			NewPlayerRepository,
+		),
+		fx.Provide(
+			repository.NewGenericRepository[model.TransactionType, string],
+			NewTransactionRepository,
+		),
+		fx.Provide(
 			NewFileRepository,
 		),
 	)

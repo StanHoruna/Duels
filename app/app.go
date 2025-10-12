@@ -2,6 +2,7 @@ package app
 
 import (
 	"duels-api/config"
+	"duels-api/internal/client"
 	"duels-api/internal/cron"
 	"duels-api/internal/handler/server"
 	v1 "duels-api/internal/handler/v1"
@@ -23,6 +24,8 @@ func Build() *fx.App {
 
 		repository.Module(),
 		cache.Module(),
+
+		client.Module(),
 
 		service.Module(),
 		server.Module(),
