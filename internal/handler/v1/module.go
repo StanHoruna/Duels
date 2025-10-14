@@ -12,6 +12,8 @@ func Module() fx.Option {
 			NewAuthHandler,
 			NewUserHandler,
 			NewDuelHandler,
+			NewNotificationHandler,
+			NewWSHandler,
 			swagger.NewSwaggerHandler,
 		),
 		fx.Invoke(func(app *fiber.App, authHandler *AuthHandler) {
@@ -22,6 +24,12 @@ func Module() fx.Option {
 		}),
 		fx.Invoke(func(app *fiber.App, authHandler *AuthHandler, duelHandler *DuelHandler) {
 			duelHandler.RegisterRoutes(app, authHandler)
+		}),
+		fx.Invoke(func(app *fiber.App, auth *AuthHandler, wsHandler *WSHandler) {
+			wsHandler.RegisterRoutes(app, auth)
+		}),
+		fx.Invoke(func(app *fiber.App, auth *AuthHandler, notificationHandler *NotificationHandler) {
+			notificationHandler.RegisterRoutes(app, auth)
 		}),
 		fx.Invoke(func(app *fiber.App, swaggerHandler *swagger.Handler) {
 			swaggerHandler.RegisterRoutes(app)

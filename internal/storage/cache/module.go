@@ -11,6 +11,7 @@ func Module() fx.Option {
 		),
 		fx.Provide(
 			NewJWTCacheStorage,
+			NewEventPubSub,
 		),
 	)
 }

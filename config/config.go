@@ -65,4 +65,6 @@ type AppConfig struct {
 	SolanaAdminPrivateKey string `env:"SOLANA_ADMIN_PRIVATE_KEY,required"`
 	ContractAddress       string `env:"CONTRACT_ADDRESS,required"`
 	ContractAddressApi    string `env:"CONTRACT_ADDRESS_API,required"`
+
+	NotificationTtl uint32 `env:"NOTIFICATION_TTL,required"`
 }

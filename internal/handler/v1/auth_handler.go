@@ -52,6 +52,23 @@ func (h *AuthHandler) AuthMiddleware(c fiber.Ctx) error {
 	return c.Next()
 }
 
+func (h *AuthHandler) AuthMiddlewareQuery(c fiber.Ctx) error {
+	token := c.Query("token")
+
+	claims, err := h.JWTService.ParseToken(token)
+	if err != nil {
+		return apperrors.Unauthorized("failed to parse token", err)
+	}
+
+	if claims == nil {
+		return apperrors.Internal("failed to generate claims")
+	}
+
+	c.Locals("claims", *claims)
+
+	return c.Next()
+}
+
 func (h *AuthHandler) UploadUserImageMiddleware(c fiber.Ctx) error {
 	claims, ok := c.Locals("claims").(auth.TokenClaims)
 	if !ok {

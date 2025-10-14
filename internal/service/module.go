@@ -17,6 +17,7 @@ func Module() fx.Option {
 			NewDuelService,
 			NewWalletService,
 			NewPriorityTracker,
+			NewNotificationService,
 		),
 		fx.Provide(
 			func(lc fx.Lifecycle, client *rpc.Client, cfg *config.Config) *sigtracker.TxTracker {

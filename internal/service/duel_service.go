@@ -7,7 +7,6 @@ import (
 	"duels-api/internal/storage/repository"
 	"duels-api/pkg/apperrors"
 	repo "duels-api/pkg/repository"
-	"fmt"
 	"github.com/gagliardetto/solana-go"
 	"github.com/go-resty/resty/v2"
 	"github.com/google/uuid"
@@ -17,16 +16,17 @@ import (
 )
 
 type DuelService struct {
-	WalletService      *WalletService
-	UserRepository     *repository.UserRepository
-	TxRepository       *repository.TransactionRepository
-	DuelRepository     *repository.DuelRepository
-	PlayerRepository   *repository.PlayerRepository
-	HTTPShareClient    *resty.Client
-	TransactionManager *repo.TransactionManager
-	ShareImageAPI      string
-	USDCMintAddress    solana.PublicKey
-	USDCMintDecimals   uint8
+	WalletService       *WalletService
+	UserRepository      *repository.UserRepository
+	TxRepository        *repository.TransactionRepository
+	DuelRepository      *repository.DuelRepository
+	PlayerRepository    *repository.PlayerRepository
+	HTTPShareClient     *resty.Client
+	TransactionManager  *repo.TransactionManager
+	ShareImageAPI       string
+	USDCMintAddress     solana.PublicKey
+	USDCMintDecimals    uint8
+	NotificationService *NotificationService
 }
 
 func NewDuelService(
@@ -37,22 +37,24 @@ func NewDuelService(
 	duelRepository *repository.DuelRepository,
 	playerRepository *repository.PlayerRepository,
 	transactionManager *repo.TransactionManager,
+	notificationService *NotificationService,
 ) (*DuelService, error) {
 	USDCMintAddress, err := solana.PublicKeyFromBase58(c.App.USDCMintAddress)
 	if err != nil {
 		return nil, apperrors.Internal("invalid USDC mint address", err)
 	}
 	return &DuelService{
-		WalletService:      walletService,
-		UserRepository:     userRepository,
-		TxRepository:       txRepository,
-		DuelRepository:     duelRepository,
-		PlayerRepository:   playerRepository,
-		HTTPShareClient:    resty.New(),
-		TransactionManager: transactionManager,
-		ShareImageAPI:      c.App.ShareImageAPI,
-		USDCMintAddress:    USDCMintAddress,
-		USDCMintDecimals:   c.App.USDCMintDecimals,
+		WalletService:       walletService,
+		UserRepository:      userRepository,
+		TxRepository:        txRepository,
+		DuelRepository:      duelRepository,
+		PlayerRepository:    playerRepository,
+		HTTPShareClient:     resty.New(),
+		TransactionManager:  transactionManager,
+		ShareImageAPI:       c.App.ShareImageAPI,
+		USDCMintAddress:     USDCMintAddress,
+		USDCMintDecimals:    c.App.USDCMintDecimals,
+		NotificationService: notificationService,
 	}, nil
 }
 
@@ -196,7 +198,16 @@ func (s *DuelService) createAndJoinCryptoDuel(
 		return err
 	}
 
-	// TODO add notification
+	notification := &model.VotedForNotification{
+		DuelID:   duel.ID,
+		DuelName: duel.Question,
+		VotedFor: ownerAnswer,
+	}
+
+	err = s.sendNotification(ctx, user.ID, model.NotificationVotedFor, notification)
+	if err != nil {
+		zap.L().Error("failed to send notification", zap.Error(err))
+	}
 
 	return nil
 }
@@ -274,7 +285,17 @@ func (s *DuelService) JoinExternalWalletCryptoDuel(
 		return nil, err
 	}
 
-	// TODO add notification
+	notification := &model.VotedForNotification{
+		DuelID:   duel.ID,
+		DuelName: duel.Question,
+		VotedFor: req.Answer,
+	}
+
+	err = s.sendVotedForNotification(ctx, user.ID, duel, notification)
+	if err != nil {
+		zap.L().Error("failed to send notification", zap.Error(err))
+	}
+
 	return &model.JoinCryptoDuelResp{Player: player}, nil
 
 }
@@ -460,7 +481,21 @@ func (s *DuelService) resolveCryptoDuel(
 	allTxHashes := append(duelRewardTxHashes, commissionRewards.CreatorCommissionTxHash, txHash)
 	allTxHashes = append(allTxHashes, refundedPlayersTxHashes...)
 
-	// TODO add notification
+	go func() {
+		err = s.sendNotificationsForDuelResolve(
+			context.Background(),
+			&model.DuelResolveNotificationParams{
+				WinnerIDs:         winnerIDs,
+				Duel:              duel,
+				DuelResolveParams: req,
+				WinAmount:         float64(winAmount),
+				CreatorCommision:  float64(commissionRewards.CreatorCommissionReward),
+			},
+		)
+		if err != nil {
+			zap.L().Error("failed to send notification", zap.Error(err))
+		}
+	}()
 
 	return allTxHashes, nil
 }
@@ -538,9 +573,13 @@ func (s *DuelService) cancelCryptoDuel(
 				zap.String("duel_id", duel.ID.String()),
 				zap.Uint64("room_number", duel.RoomNumber))
 		}
+		go func() {
+			err = s.sendDuelRefundNotification(context.Background(), duel)
+			if err != nil {
+				zap.L().Error("failed to send notification", zap.Error(err))
+			}
+		}()
 	}
-
-	// TODO add notification
 
 	duel.Status = req.Status
 	duel.CancellationReason = req.CancellationReason
@@ -627,67 +666,4 @@ func (s *DuelService) partialCryptoRefund(
 	}
 
 	return txHashes, nil
-}
-
-func (s *DuelService) hasChargedDuelPriceFromUser(duelPlayersCount uint64, duelOldStatus, duelNewStatus uint8) bool {
-	duelIsInProcess := duelOldStatus == model.DuelStatusInProcess
-	isNewStatusRefund := duelNewStatus == model.DuelStatusRefund
-
-	duelIsInReview := duelOldStatus == model.DuelStatusInReview
-	isNewStatusAdminCancelled := duelNewStatus == model.DuelStatusAdminCancelled
-
-	if ((duelIsInProcess && isNewStatusRefund) ||
-		(duelIsInReview && isNewStatusAdminCancelled)) &&
-		duelPlayersCount > 0 {
-
-		return true
-	}
-
-	return false
-}
-
-func (s *DuelService) isAbleToJoinDuel(ctx context.Context, duel *model.Duel, userID uuid.UUID) error {
-	duelIsInProgress := duel.Status == model.DuelStatusInProcess
-	duelIsInReview := duel.Status == model.DuelStatusInReview
-
-	if !(duelIsInProgress || duelIsInReview) {
-		return apperrors.BadRequest("failed to join duel")
-	}
-
-	isPlayer, err := s.PlayerRepository.UserAlreadyParticipant(ctx, userID, duel.ID)
-	if err != nil {
-		return apperrors.Internal("failed to check if user is already participating in duel", err)
-	}
-
-	if isPlayer {
-		return apperrors.BadRequest("user is already participating in this duel")
-	}
-
-	return nil
-}
-
-func (s *DuelService) validateResolveDuelByOwner(ownerID uuid.UUID, duel *model.Duel) error {
-	if duel.OwnerID != ownerID {
-		return apperrors.BadRequest("only the owner of the duel can resolve it")
-	}
-
-	if duel.Status != model.DuelStatusInProcess {
-		return apperrors.BadRequest("resolve is not possible from current status")
-	}
-
-	return nil
-}
-
-func (s *DuelService) sendDuelShareImageReq(duel *model.Duel) error {
-	resp, err := s.HTTPShareClient.R().
-		SetHeader("Content-Type", "application/json").
-		SetBody(duel).
-		Post(s.ShareImageAPI + "duel")
-	if err != nil {
-		return err
-	}
-	if resp.IsError() {
-		return fmt.Errorf("status: %d, body: %s", resp.StatusCode(), resp.String())
-	}
-	return nil
 }

@@ -40,6 +40,10 @@ func Module() fx.Option {
 			NewTransactionRepository,
 		),
 		fx.Provide(
+			repository.NewGenericRepository[model.Notification, uuid.UUID],
+			NewNotificationRepository,
+		),
+		fx.Provide(
 			NewFileRepository,
 		),
 	)
