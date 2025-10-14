@@ -56,6 +56,68 @@ func NewDuelService(
 	}, nil
 }
 
+func (s *DuelService) GetAllDuelsUnauthorized(ctx context.Context, options *repo.Options) ([]model.DuelShow, error) {
+	duels, err := s.DuelRepository.GetAllDuels(ctx, uuid.Nil, options)
+	if err != nil {
+		return nil, apperrors.Internal("failed to get duels", err)
+	}
+
+	return duels, nil
+}
+
+func (s *DuelService) GetAllDuels(ctx context.Context, userID uuid.UUID, options *repo.Options) ([]model.DuelShow, error) {
+	duels, err := s.DuelRepository.GetAllDuels(ctx, userID, options)
+	if err != nil {
+		return nil, apperrors.Internal("failed to get duels", err)
+	}
+
+	return duels, nil
+}
+
+func (s *DuelService) CountAllDuels(ctx context.Context, options *repo.Options) (int, error) {
+	count, err := s.DuelRepository.CountWithOptions(ctx, options)
+	if err != nil {
+		return 0, apperrors.Internal("failed to count all duels", err)
+	}
+
+	return count, nil
+}
+
+func (s *DuelService) GetDuelByIDUnauthorized(ctx context.Context, duelID uuid.UUID) (*model.DuelShow, error) {
+	duel, err := s.DuelRepository.GetDuelShowByID(ctx, uuid.Nil, duelID)
+	if err != nil {
+		return nil, apperrors.Internal("failed to get duel", err)
+	}
+
+	return duel, nil
+}
+
+func (s *DuelService) GetMyDuels(ctx context.Context, userID uuid.UUID, options *repo.Options) ([]model.DuelShow, error) {
+	duels, err := s.DuelRepository.GetUserDuels(ctx, userID, options)
+	if err != nil {
+		return nil, apperrors.Internal("failed to get my duels", err)
+	}
+
+	return duels, nil
+}
+
+func (s *DuelService) GetDuelByID(ctx context.Context,
+	duelID uuid.UUID,
+	userID uuid.UUID,
+) (*model.DuelShow, []model.PlayerShow, error) {
+	duel, err := s.DuelRepository.GetDuelShowByID(ctx, userID, duelID)
+	if err != nil {
+		return nil, nil, apperrors.Internal("failed to get duel", err)
+	}
+
+	players, err := s.PlayerRepository.GetAllPlayersByDuelID(ctx, duelID, nil)
+	if err != nil {
+		return nil, nil, apperrors.Internal("failed to get players", err)
+	}
+
+	return duel, players, nil
+}
+
 func (s *DuelService) CreateCryptoDuel(
 	ctx context.Context,
 	userID uuid.UUID,

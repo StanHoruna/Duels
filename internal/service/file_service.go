@@ -61,6 +61,26 @@ func (s *FileService) SaveUserFile(
 	return s.saveFile(userUploadMediaDir, file)
 }
 
+func (s *FileService) SaveUserFiles(
+	files []*multipart.FileHeader,
+) ([]string, error) {
+	if len(files) > 3 {
+		return nil, apperrors.Internal("no more than 3 images allowed")
+	}
+
+	filesPath := make([]string, len(files))
+
+	for i, file := range files {
+		path, err := s.saveFile(userUploadMediaDir, file)
+		if err != nil {
+			return nil, err
+		}
+		filesPath[i] = path
+	}
+
+	return filesPath, nil
+}
+
 const maxAllowedSize = 3 * 1024 * 1024 // 3 MB
 
 func (s *FileService) saveFile(

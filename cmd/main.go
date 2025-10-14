@@ -12,6 +12,9 @@ func init() {
 	}
 }
 
+// @title		Duels API
+// @version		1.0
+// @description	This is a swagger specification for a Duels back-end.
 func main() {
 	app.Build().Run()
 }

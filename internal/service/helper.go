@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	MediaFilesDirectory = "resources/profile-icons/"
+	MediaFilesDirectory = "resources/static/profile-icons/"
 )
 
 func (s *UserService) getRandomIconName() (string, error) {

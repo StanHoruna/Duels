@@ -1,0 +1,990 @@
+definitions:
+  duels-api_internal_model.AuthWithWallet:
+    properties:
+      address:
+        type: string
+      secret:
+        type: string
+    required:
+    - address
+    - secret
+    type: object
+  duels-api_internal_model.CreateCryptoDuelResp:
+    properties:
+      duel:
+        $ref: '#/definitions/duels-api_internal_model.Duel'
+      result:
+        $ref: '#/definitions/duels-api_internal_model.JoinSolanaRoomResp'
+    type: object
+  duels-api_internal_model.CreateDuelReq:
+    properties:
+      answer:
+        type: integer
+      bg_url:
+        type: string
+      commission:
+        type: integer
+      duel_info:
+        additionalProperties: {}
+        type: object
+      duel_price:
+        type: number
+      event_date:
+        type: string
+      image_url:
+        type: string
+      question:
+        type: string
+      tx_hash:
+        type: string
+    type: object
+  duels-api_internal_model.Duel:
+    properties:
+      bg_url:
+        type: string
+      cancellation_reason:
+        type: string
+      commission:
+        type: integer
+      created_at:
+        type: string
+      duel_info:
+        additionalProperties: {}
+        type: object
+      duel_price:
+        type: number
+      event_date:
+        type: string
+      final_result:
+        type: integer
+      id:
+        type: string
+      image_url:
+        type: string
+      owner_id:
+        type: string
+      players_count:
+        type: integer
+      question:
+        type: string
+      refunded_players_count:
+        type: integer
+      room_number:
+        type: integer
+      status:
+        type: integer
+      updated_at:
+        type: string
+      username:
+        type: string
+      winners_count:
+        type: integer
+    type: object
+  duels-api_internal_model.DuelResolveReq:
+    properties:
+      answer:
+        type: integer
+      duel_id:
+        type: string
+    type: object
+  duels-api_internal_model.DuelShow:
+    properties:
+      bg_url:
+        type: string
+      cancellation_reason:
+        type: string
+      commission:
+        type: integer
+      created_at:
+        type: string
+      duel_info:
+        additionalProperties: {}
+        type: object
+      duel_price:
+        type: number
+      event_date:
+        type: string
+      final_result:
+        type: integer
+      id:
+        type: string
+      image_url:
+        type: string
+      joined:
+        type: boolean
+      no_count:
+        type: integer
+      owner_id:
+        type: string
+      owner_image_url:
+        type: string
+      player_status:
+        type: integer
+      players_count:
+        type: integer
+      question:
+        type: string
+      refunded_players_count:
+        type: integer
+      room_number:
+        type: integer
+      status:
+        type: integer
+      updated_at:
+        type: string
+      username:
+        type: string
+      winners_count:
+        type: integer
+      yes_count:
+        type: integer
+      your_answer:
+        type: integer
+    type: object
+  duels-api_internal_model.JoinCryptoDuelResp:
+    properties:
+      player:
+        $ref: '#/definitions/duels-api_internal_model.Player'
+      result:
+        $ref: '#/definitions/duels-api_internal_model.JoinSolanaRoomResp'
+    type: object
+  duels-api_internal_model.JoinDuelReq:
+    properties:
+      answer:
+        type: integer
+      duel_id:
+        type: string
+      external_source:
+        type: string
+      invited_by:
+        type: string
+      tx_hash:
+        type: string
+    type: object
+  duels-api_internal_model.JoinSolanaRoomResp:
+    properties:
+      tx_hash:
+        type: string
+    type: object
+  duels-api_internal_model.Player:
+    properties:
+      answer:
+        type: integer
+      created_at:
+        type: string
+      duel_id:
+        type: string
+      final_status:
+        type: integer
+      id:
+        type: string
+      is_winner:
+        type: boolean
+      user_id:
+        type: string
+      win_amount:
+        type: number
+    type: object
+  duels-api_internal_model.PlayerShow:
+    properties:
+      answer:
+        type: integer
+      created_at:
+        type: string
+      duel_id:
+        type: string
+      final_status:
+        type: integer
+      id:
+        type: string
+      image_url:
+        type: string
+      is_winner:
+        type: boolean
+      user_id:
+        type: string
+      username:
+        type: string
+      win_amount:
+        type: number
+    type: object
+  duels-api_internal_model.User:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      image_url:
+        type: string
+      public_address:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  duels-api_pkg_apperrors.ErrorPublic:
+    properties:
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
+  duels-api_pkg_jwt.TokenPair:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: This is a swagger specification for a Duels back-end.
+  title: Duels API
+  version: "1.0"
+paths:
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Refreshes the user's session using the refresh token supplied in
+        the Authorization header. Returns a new access/refresh token pair.
+      parameters:
+      - default: Bearer <refresh_token>
+        description: Bearer refresh token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Tokens refreshed
+          schema:
+            properties:
+              jwt_info:
+                $ref: '#/definitions/duels-api_pkg_jwt.TokenPair'
+            type: object
+        "401":
+          description: Unauthorized - invalid or expired refresh token
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+      security:
+      - BearerAuth: []
+      summary: Refresh JWT tokens
+      tags:
+      - auth
+  /auth/sign-in-wallet:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user using a connected crypto wallet (e.g., Solana
+        Phantom). On success returns the user profile and a new JWT token pair.
+      parameters:
+      - description: Wallet sign-in payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/duels-api_internal_model.AuthWithWallet'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Authenticated successfully
+          schema:
+            properties:
+              jwt_info:
+                $ref: '#/definitions/duels-api_pkg_jwt.TokenPair'
+              user:
+                $ref: '#/definitions/duels-api_internal_model.User'
+            type: object
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "401":
+          description: Unauthorized - invalid wallet data/signature
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+      summary: Sign in with crypto wallet
+      tags:
+      - auth
+  /crypto-duel/solana:
+    post:
+      consumes:
+      - application/json
+      description: Creates a crypto duel after the client has submitted an init transaction
+        from an external wallet. The backend validates on-chain data and persists
+        the duel.
+      parameters:
+      - description: Create duel request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/duels-api_internal_model.CreateDuelReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Duel created
+          schema:
+            $ref: '#/definitions/duels-api_internal_model.CreateCryptoDuelResp'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+      security:
+      - BearerAuth: []
+      summary: Create crypto duel (external Solana wallet)
+      tags:
+      - duel
+  /crypto-duel/solana/join:
+    post:
+      consumes:
+      - application/json
+      description: Records user participation in a crypto duel after the client submits
+        a join transaction from an external wallet.
+      parameters:
+      - description: Duel ID, answer (0/1), optional tx hash
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/duels-api_internal_model.JoinDuelReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Joined successfully
+          schema:
+            $ref: '#/definitions/duels-api_internal_model.JoinCryptoDuelResp'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "404":
+          description: Duel not found
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+      security:
+      - BearerAuth: []
+      summary: Join crypto duel (external Solana wallet)
+      tags:
+      - duel
+  /crypto-duel/solana/join/sign-tx:
+    post:
+      consumes:
+      - application/json
+      description: Builds a base64-encoded Solana join transaction for the client
+        to sign in an external wallet.
+      parameters:
+      - description: Duel ID and answer (0/1)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/duels-api_internal_model.JoinDuelReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Unsigned base64 transaction
+          schema:
+            properties:
+              tx:
+                type: string
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+      security:
+      - BearerAuth: []
+      summary: Build unsigned join transaction for a crypto duel
+      tags:
+      - duel
+  /crypto-duel/solana/resolve:
+    put:
+      consumes:
+      - application/json
+      description: Allows the duel owner to resolve the duel and trigger payouts.
+        Returns transaction hashes of on-chain transfers.
+      parameters:
+      - description: Duel ID and final answer (0/1)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/duels-api_internal_model.DuelResolveReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Distribution transaction hashes
+          schema:
+            properties:
+              tx_hashes:
+                items:
+                  type: string
+                type: array
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+      security:
+      - BearerAuth: []
+      summary: Resolve crypto duel by owner (payouts)
+      tags:
+      - duel
+  /crypto-duel/solana/sign-tx:
+    post:
+      consumes:
+      - application/json
+      description: Builds a base64-encoded Solana init transaction. The client signs
+        and sends it using an external wallet (e.g., Phantom/Solflare).
+      parameters:
+      - description: Duel parameters
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/duels-api_internal_model.CreateDuelReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Unsigned base64 transaction
+          schema:
+            properties:
+              tx:
+                type: string
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+      security:
+      - BearerAuth: []
+      summary: Build unsigned init transaction for creating a crypto duel
+      tags:
+      - duel
+  /duel/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns duel details and players for the authenticated user.
+      parameters:
+      - description: Duel ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Duel and players
+          schema:
+            properties:
+              duel:
+                $ref: '#/definitions/duels-api_internal_model.DuelShow'
+              players:
+                items:
+                  $ref: '#/definitions/duels-api_internal_model.PlayerShow'
+                type: array
+            type: object
+        "400":
+          description: Invalid duel ID
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "404":
+          description: Duel not found
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+      security:
+      - BearerAuth: []
+      summary: Get duel by ID (authorized)
+      tags:
+      - duel
+  /duel/all:
+    get:
+      consumes:
+      - application/json
+      description: Returns duels with user-specific flags (e.g., joined, your_answer).
+        Requires authentication.
+      parameters:
+      - default: 10
+        description: Page size
+        format: int64
+        in: query
+        name: opts.pagination.page_size
+        type: integer
+      - default: 1
+        description: Page number (starts at 1)
+        format: int64
+        in: query
+        name: opts.pagination.page_num
+        type: integer
+      - description: Order by field
+        in: query
+        name: opts.order.order_by
+        type: string
+      - description: Order type
+        enum:
+        - desc
+        - asc
+        in: query
+        name: opts.order.order_type
+        type: string
+      - description: Filter column
+        in: query
+        name: opts.filters[0].column
+        type: string
+      - description: Filter operator
+        in: query
+        name: opts.filters[0].operator
+        type: string
+      - description: Filter value
+        in: query
+        name: opts.filters[0].value
+        type: string
+      - description: Use OR between filters
+        in: query
+        name: opts.filters[0].where_or
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Duels with participation flags
+          schema:
+            items:
+              $ref: '#/definitions/duels-api_internal_model.DuelShow'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+      security:
+      - BearerAuth: []
+      summary: List duels (authorized, with participation flags)
+      tags:
+      - duel
+  /duel/my:
+    get:
+      consumes:
+      - application/json
+      description: Returns duels created by the authenticated user. Supports filtering/sorting/pagination.
+      parameters:
+      - default: 10
+        description: Page size
+        format: int64
+        in: query
+        name: opts.pagination.page_size
+        type: integer
+      - default: 1
+        description: Page number (starts at 1)
+        format: int64
+        in: query
+        name: opts.pagination.page_num
+        type: integer
+      - description: Order by field
+        in: query
+        name: opts.order.order_by
+        type: string
+      - description: Order type
+        enum:
+        - desc
+        - asc
+        in: query
+        name: opts.order.order_type
+        type: string
+      - description: Filter column
+        in: query
+        name: opts.filters[0].column
+        type: string
+      - description: Filter operator
+        in: query
+        name: opts.filters[0].operator
+        type: string
+      - description: Filter value
+        in: query
+        name: opts.filters[0].value
+        type: string
+      - description: Use OR between filters
+        in: query
+        name: opts.filters[0].where_or
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: My duels
+          schema:
+            items:
+              $ref: '#/definitions/duels-api_internal_model.DuelShow'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+      security:
+      - BearerAuth: []
+      summary: List my duels
+      tags:
+      - duel
+  /duel/public/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns a duel by ID without authentication.
+      parameters:
+      - description: Duel ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Duel
+          schema:
+            $ref: '#/definitions/duels-api_internal_model.Duel'
+        "400":
+          description: Invalid duel ID
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "404":
+          description: Duel not found
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+      summary: Get duel by ID (public)
+      tags:
+      - duel-public
+  /duel/public/all:
+    get:
+      consumes:
+      - application/json
+      description: Public list of duels with filtering/sorting/pagination (no user-specific
+        flags like 'joined').
+      parameters:
+      - default: 10
+        description: Page size
+        format: int64
+        in: query
+        name: opts.pagination.page_size
+        type: integer
+      - default: 1
+        description: Page number (starts at 1)
+        format: int64
+        in: query
+        name: opts.pagination.page_num
+        type: integer
+      - default: created_at
+        description: Order by field
+        in: query
+        name: opts.order.order_by
+        type: string
+      - default: desc
+        description: Order type
+        enum:
+        - desc
+        - asc
+        in: query
+        name: opts.order.order_type
+        type: string
+      - description: Filter column
+        in: query
+        name: opts.filters[0].column
+        type: string
+      - description: Filter operator
+        in: query
+        name: opts.filters[0].operator
+        type: string
+      - description: Filter value
+        in: query
+        name: opts.filters[0].value
+        type: string
+      - description: Use OR between filters
+        in: query
+        name: opts.filters[0].where_or
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Duels
+          schema:
+            items:
+              $ref: '#/definitions/duels-api_internal_model.DuelShow'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+      summary: List duels (public)
+      tags:
+      - duel-public
+  /duel/public/count:
+    get:
+      consumes:
+      - application/json
+      description: Public count of duels with optional filtering.
+      parameters:
+      - description: Filter column
+        in: query
+        name: opts.filters[0].column
+        type: string
+      - description: Filter operator
+        in: query
+        name: opts.filters[0].operator
+        type: string
+      - description: Filter value
+        in: query
+        name: opts.filters[0].value
+        type: string
+      - description: Use OR between filters
+        in: query
+        name: opts.filters[0].where_or
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Total count
+          schema:
+            type: integer
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+      summary: Count duels (public)
+      tags:
+      - duel-public
+  /user/:
+    get:
+      description: Returns the authenticated user's profile data based on their JWT
+        token.
+      parameters:
+      - description: Authorization Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved user data
+          schema:
+            properties:
+              user:
+                $ref: '#/definitions/duels-api_internal_model.User'
+            type: object
+        "401":
+          description: Unauthorized - missing or invalid token
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+      security:
+      - BearerAuth: []
+      summary: Get current user profile
+      tags:
+      - user
+  /user/profile-picture:
+    put:
+      consumes:
+      - multipart/form-data
+      description: |-
+        Allows an authenticated user to upload a new profile image.
+        The uploaded image will replace the existing profile picture and return its new public URL.
+      parameters:
+      - description: Authorization Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Profile image file
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Profile picture successfully updated
+          schema:
+            properties:
+              image_url:
+                type: string
+            type: object
+        "400":
+          description: Invalid request data or missing image file
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "401":
+          description: Unauthorized - invalid or missing token
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "500":
+          description: Internal server error during image upload
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+      security:
+      - BearerAuth: []
+      summary: Set user profile picture
+      tags:
+      - user
+  /user/upload-images:
+    put:
+      consumes:
+      - multipart/form-data
+      description: |-
+        Allows an authenticated user to upload one or more image files.
+        Each image is stored, and the service returns an array of accessible URLs.
+        Upload rate is limited via middleware to prevent spam (max 3 per minute).
+      parameters:
+      - description: Authorization Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - collectionFormat: csv
+        description: Array of images to upload
+        in: formData
+        items:
+          type: file
+        name: images
+        required: true
+        type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Images uploaded successfully, returns list of image URLs
+          schema:
+            properties:
+              image_urls:
+                items:
+                  type: string
+                type: array
+            type: object
+        "400":
+          description: Invalid request data or missing image files
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "401":
+          description: Unauthorized - missing or invalid token
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "429":
+          description: Too many uploads - rate limit exceeded
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "500":
+          description: Internal server error during file save
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+      security:
+      - BearerAuth: []
+      summary: Upload user images
+      tags:
+      - user
+swagger: "2.0"

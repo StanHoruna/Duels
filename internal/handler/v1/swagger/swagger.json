@@ -1,0 +1,1498 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is a swagger specification for a Duels back-end.",
+        "title": "Duels API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "paths": {
+        "/auth/refresh": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Refreshes the user's session using the refresh token supplied in the Authorization header. Returns a new access/refresh token pair.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Refresh JWT tokens",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003crefresh_token\u003e",
+                        "description": "Bearer refresh token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tokens refreshed",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "jwt_info": {
+                                    "$ref": "#/definitions/duels-api_pkg_jwt.TokenPair"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - invalid or expired refresh token",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/sign-in-wallet": {
+            "post": {
+                "description": "Authenticates a user using a connected crypto wallet (e.g., Solana Phantom). On success returns the user profile and a new JWT token pair.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Sign in with crypto wallet",
+                "parameters": [
+                    {
+                        "description": "Wallet sign-in payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_internal_model.AuthWithWallet"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Authenticated successfully",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "jwt_info": {
+                                    "$ref": "#/definitions/duels-api_pkg_jwt.TokenPair"
+                                },
+                                "user": {
+                                    "$ref": "#/definitions/duels-api_internal_model.User"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - invalid wallet data/signature",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    }
+                }
+            }
+        },
+        "/crypto-duel/solana": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates a crypto duel after the client has submitted an init transaction from an external wallet. The backend validates on-chain data and persists the duel.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "duel"
+                ],
+                "summary": "Create crypto duel (external Solana wallet)",
+                "parameters": [
+                    {
+                        "description": "Create duel request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_internal_model.CreateDuelReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Duel created",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_internal_model.CreateCryptoDuelResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    }
+                }
+            }
+        },
+        "/crypto-duel/solana/join": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Records user participation in a crypto duel after the client submits a join transaction from an external wallet.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "duel"
+                ],
+                "summary": "Join crypto duel (external Solana wallet)",
+                "parameters": [
+                    {
+                        "description": "Duel ID, answer (0/1), optional tx hash",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_internal_model.JoinDuelReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Joined successfully",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_internal_model.JoinCryptoDuelResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "404": {
+                        "description": "Duel not found",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    }
+                }
+            }
+        },
+        "/crypto-duel/solana/join/sign-tx": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Builds a base64-encoded Solana join transaction for the client to sign in an external wallet.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "duel"
+                ],
+                "summary": "Build unsigned join transaction for a crypto duel",
+                "parameters": [
+                    {
+                        "description": "Duel ID and answer (0/1)",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_internal_model.JoinDuelReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Unsigned base64 transaction",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "tx": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    }
+                }
+            }
+        },
+        "/crypto-duel/solana/resolve": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Allows the duel owner to resolve the duel and trigger payouts. Returns transaction hashes of on-chain transfers.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "duel"
+                ],
+                "summary": "Resolve crypto duel by owner (payouts)",
+                "parameters": [
+                    {
+                        "description": "Duel ID and final answer (0/1)",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_internal_model.DuelResolveReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Distribution transaction hashes",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "tx_hashes": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    }
+                }
+            }
+        },
+        "/crypto-duel/solana/sign-tx": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Builds a base64-encoded Solana init transaction. The client signs and sends it using an external wallet (e.g., Phantom/Solflare).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "duel"
+                ],
+                "summary": "Build unsigned init transaction for creating a crypto duel",
+                "parameters": [
+                    {
+                        "description": "Duel parameters",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_internal_model.CreateDuelReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Unsigned base64 transaction",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "tx": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    }
+                }
+            }
+        },
+        "/duel/all": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns duels with user-specific flags (e.g., joined, your_answer). Requires authentication.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "duel"
+                ],
+                "summary": "List duels (authorized, with participation flags)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "format": "int64",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "opts.pagination.page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "format": "int64",
+                        "default": 1,
+                        "description": "Page number (starts at 1)",
+                        "name": "opts.pagination.page_num",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Order by field",
+                        "name": "opts.order.order_by",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "desc",
+                            "asc"
+                        ],
+                        "type": "string",
+                        "description": "Order type",
+                        "name": "opts.order.order_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter column",
+                        "name": "opts.filters[0].column",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter operator",
+                        "name": "opts.filters[0].operator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter value",
+                        "name": "opts.filters[0].value",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Use OR between filters",
+                        "name": "opts.filters[0].where_or",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Duels with participation flags",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/duels-api_internal_model.DuelShow"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    }
+                }
+            }
+        },
+        "/duel/my": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns duels created by the authenticated user. Supports filtering/sorting/pagination.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "duel"
+                ],
+                "summary": "List my duels",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "format": "int64",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "opts.pagination.page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "format": "int64",
+                        "default": 1,
+                        "description": "Page number (starts at 1)",
+                        "name": "opts.pagination.page_num",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Order by field",
+                        "name": "opts.order.order_by",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "desc",
+                            "asc"
+                        ],
+                        "type": "string",
+                        "description": "Order type",
+                        "name": "opts.order.order_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter column",
+                        "name": "opts.filters[0].column",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter operator",
+                        "name": "opts.filters[0].operator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter value",
+                        "name": "opts.filters[0].value",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Use OR between filters",
+                        "name": "opts.filters[0].where_or",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "My duels",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/duels-api_internal_model.DuelShow"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    }
+                }
+            }
+        },
+        "/duel/public/all": {
+            "get": {
+                "description": "Public list of duels with filtering/sorting/pagination (no user-specific flags like 'joined').",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "duel-public"
+                ],
+                "summary": "List duels (public)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "format": "int64",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "opts.pagination.page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "format": "int64",
+                        "default": 1,
+                        "description": "Page number (starts at 1)",
+                        "name": "opts.pagination.page_num",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "created_at",
+                        "description": "Order by field",
+                        "name": "opts.order.order_by",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "desc",
+                            "asc"
+                        ],
+                        "type": "string",
+                        "default": "desc",
+                        "description": "Order type",
+                        "name": "opts.order.order_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter column",
+                        "name": "opts.filters[0].column",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter operator",
+                        "name": "opts.filters[0].operator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter value",
+                        "name": "opts.filters[0].value",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Use OR between filters",
+                        "name": "opts.filters[0].where_or",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Duels",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/duels-api_internal_model.DuelShow"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    }
+                }
+            }
+        },
+        "/duel/public/count": {
+            "get": {
+                "description": "Public count of duels with optional filtering.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "duel-public"
+                ],
+                "summary": "Count duels (public)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter column",
+                        "name": "opts.filters[0].column",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter operator",
+                        "name": "opts.filters[0].operator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter value",
+                        "name": "opts.filters[0].value",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Use OR between filters",
+                        "name": "opts.filters[0].where_or",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Total count",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    }
+                }
+            }
+        },
+        "/duel/public/{id}": {
+            "get": {
+                "description": "Returns a duel by ID without authentication.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "duel-public"
+                ],
+                "summary": "Get duel by ID (public)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Duel ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Duel",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_internal_model.Duel"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid duel ID",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "404": {
+                        "description": "Duel not found",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    }
+                }
+            }
+        },
+        "/duel/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns duel details and players for the authenticated user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "duel"
+                ],
+                "summary": "Get duel by ID (authorized)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Duel ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Duel and players",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "duel": {
+                                    "$ref": "#/definitions/duels-api_internal_model.DuelShow"
+                                },
+                                "players": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/duels-api_internal_model.PlayerShow"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid duel ID",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "404": {
+                        "description": "Duel not found",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns the authenticated user's profile data based on their JWT token.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Get current user profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved user data",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "user": {
+                                    "$ref": "#/definitions/duels-api_internal_model.User"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/profile-picture": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Allows an authenticated user to upload a new profile image.\nThe uploaded image will replace the existing profile picture and return its new public URL.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Set user profile picture",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Profile image file",
+                        "name": "image",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Profile picture successfully updated",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "image_url": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data or missing image file",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - invalid or missing token",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error during image upload",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/upload-images": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Allows an authenticated user to upload one or more image files.\nEach image is stored, and the service returns an array of accessible URLs.\nUpload rate is limited via middleware to prevent spam (max 3 per minute).",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Upload user images",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "file"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Array of images to upload",
+                        "name": "images",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Images uploaded successfully, returns list of image URLs",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "image_urls": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data or missing image files",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many uploads - rate limit exceeded",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error during file save",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "duels-api_internal_model.AuthWithWallet": {
+            "type": "object",
+            "required": [
+                "address",
+                "secret"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "secret": {
+                    "type": "string"
+                }
+            }
+        },
+        "duels-api_internal_model.CreateCryptoDuelResp": {
+            "type": "object",
+            "properties": {
+                "duel": {
+                    "$ref": "#/definitions/duels-api_internal_model.Duel"
+                },
+                "result": {
+                    "$ref": "#/definitions/duels-api_internal_model.JoinSolanaRoomResp"
+                }
+            }
+        },
+        "duels-api_internal_model.CreateDuelReq": {
+            "type": "object",
+            "properties": {
+                "answer": {
+                    "type": "integer"
+                },
+                "bg_url": {
+                    "type": "string"
+                },
+                "commission": {
+                    "type": "integer"
+                },
+                "duel_info": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "duel_price": {
+                    "type": "number"
+                },
+                "event_date": {
+                    "type": "string"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "question": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                }
+            }
+        },
+        "duels-api_internal_model.Duel": {
+            "type": "object",
+            "properties": {
+                "bg_url": {
+                    "type": "string"
+                },
+                "cancellation_reason": {
+                    "type": "string"
+                },
+                "commission": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "duel_info": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "duel_price": {
+                    "type": "number"
+                },
+                "event_date": {
+                    "type": "string"
+                },
+                "final_result": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "owner_id": {
+                    "type": "string"
+                },
+                "players_count": {
+                    "type": "integer"
+                },
+                "question": {
+                    "type": "string"
+                },
+                "refunded_players_count": {
+                    "type": "integer"
+                },
+                "room_number": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "winners_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "duels-api_internal_model.DuelResolveReq": {
+            "type": "object",
+            "properties": {
+                "answer": {
+                    "type": "integer"
+                },
+                "duel_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "duels-api_internal_model.DuelShow": {
+            "type": "object",
+            "properties": {
+                "bg_url": {
+                    "type": "string"
+                },
+                "cancellation_reason": {
+                    "type": "string"
+                },
+                "commission": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "duel_info": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "duel_price": {
+                    "type": "number"
+                },
+                "event_date": {
+                    "type": "string"
+                },
+                "final_result": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "joined": {
+                    "type": "boolean"
+                },
+                "no_count": {
+                    "type": "integer"
+                },
+                "owner_id": {
+                    "type": "string"
+                },
+                "owner_image_url": {
+                    "type": "string"
+                },
+                "player_status": {
+                    "type": "integer"
+                },
+                "players_count": {
+                    "type": "integer"
+                },
+                "question": {
+                    "type": "string"
+                },
+                "refunded_players_count": {
+                    "type": "integer"
+                },
+                "room_number": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "winners_count": {
+                    "type": "integer"
+                },
+                "yes_count": {
+                    "type": "integer"
+                },
+                "your_answer": {
+                    "type": "integer"
+                }
+            }
+        },
+        "duels-api_internal_model.JoinCryptoDuelResp": {
+            "type": "object",
+            "properties": {
+                "player": {
+                    "$ref": "#/definitions/duels-api_internal_model.Player"
+                },
+                "result": {
+                    "$ref": "#/definitions/duels-api_internal_model.JoinSolanaRoomResp"
+                }
+            }
+        },
+        "duels-api_internal_model.JoinDuelReq": {
+            "type": "object",
+            "properties": {
+                "answer": {
+                    "type": "integer"
+                },
+                "duel_id": {
+                    "type": "string"
+                },
+                "external_source": {
+                    "type": "string"
+                },
+                "invited_by": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                }
+            }
+        },
+        "duels-api_internal_model.JoinSolanaRoomResp": {
+            "type": "object",
+            "properties": {
+                "tx_hash": {
+                    "type": "string"
+                }
+            }
+        },
+        "duels-api_internal_model.Player": {
+            "type": "object",
+            "properties": {
+                "answer": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "duel_id": {
+                    "type": "string"
+                },
+                "final_status": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_winner": {
+                    "type": "boolean"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "win_amount": {
+                    "type": "number"
+                }
+            }
+        },
+        "duels-api_internal_model.PlayerShow": {
+            "type": "object",
+            "properties": {
+                "answer": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "duel_id": {
+                    "type": "string"
+                },
+                "final_status": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "is_winner": {
+                    "type": "boolean"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "win_amount": {
+                    "type": "number"
+                }
+            }
+        },
+        "duels-api_internal_model.User": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "public_address": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "duels-api_pkg_apperrors.ErrorPublic": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                }
+            }
+        },
+        "duels-api_pkg_jwt.TokenPair": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

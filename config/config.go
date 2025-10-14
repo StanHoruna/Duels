@@ -31,10 +31,12 @@ type Config struct {
 }
 
 type HTTPConfig struct {
-	Host             string `env:"HTTP_HOST,required"`
-	Port             string `env:"HTTP_PORT,required"`
-	AllowOrigins     string `env:"ALLOW_ORIGINS,required"`
-	AllowCredentials bool   `env:"ALLOW_CREDENTIALS,required"`
+	Host                string `env:"HTTP_HOST,required"`
+	Port                string `env:"HTTP_PORT,required"`
+	Address             string `env:"HTTP_ADDRESS,required"`
+	AllowOrigins        string `env:"ALLOW_ORIGINS,required"`
+	AllowCredentials    bool   `env:"ALLOW_CREDENTIALS,required"`
+	SwaggerValidatorURL string `env:"SWAGGER_VALIDATOR_URL,required"`
 }
 
 type AuthConfig struct {

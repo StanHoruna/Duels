@@ -1,5 +1,3 @@
-// transport/http/v1/auth_wallet.go (новый файл в пакете v1)
-
 package v1
 
 import (
