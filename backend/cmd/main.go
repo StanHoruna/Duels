@@ -1,7 +1,7 @@
 package main
 
 import (
-	"duels-api/backend/app"
+	"duels-api/app"
 	"log"
 
 	"github.com/joho/godotenv"
