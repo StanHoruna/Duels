@@ -3,3 +3,4 @@ firebase-auth.json
 .env
 redis.conf
 .data
+docker-compose.yml
