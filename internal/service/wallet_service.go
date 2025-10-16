@@ -11,15 +11,16 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
 	bin "github.com/gagliardetto/binary"
 	associatedtokenaccount "github.com/gagliardetto/solana-go/programs/associated-token-account"
 	computebudget "github.com/gagliardetto/solana-go/programs/compute-budget"
 	"github.com/gagliardetto/solana-go/programs/token"
 	"github.com/goccy/go-json"
 	"go.uber.org/zap"
-	"strconv"
-	"strings"
-	"time"
 
 	"github.com/gagliardetto/solana-go"
 	"github.com/gagliardetto/solana-go/rpc"
@@ -148,10 +149,12 @@ func (s *WalletService) InitAndJoinSolanaRoomWithExternalWallet(
 	duelPrice := duel.DuelPrice * USDCPriceMultiplier
 
 	reqBody := map[string]interface{}{
+		"theme":       "", // todo add req.Question or leave as is
 		"description": duel.Question,
 		"percent":     uint32(duel.Commission),
 		"bet":         uint32(duelPrice),
 		"pda_nr":      uint32(duel.RoomNumber),
+		"end":         duel.EventDate.Unix(),
 	}
 
 	txInit, err := s.GetTxFromContractService(reqBody, "init")
