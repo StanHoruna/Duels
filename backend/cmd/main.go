@@ -1,9 +1,10 @@
 package main
 
 import (
-	"duels-api/app"
-	"github.com/joho/godotenv"
+	"duels-api/backend/app"
 	"log"
+
+	"github.com/joho/godotenv"
 )
 
 func init() {
