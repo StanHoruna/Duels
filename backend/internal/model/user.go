@@ -41,3 +41,9 @@ type SignInJWTResp struct {
 	RefreshToken string `json:"refresh_token"`
 	AccessToken  string `json:"access_token"`
 }
+
+type UsernameChange struct {
+	bun.BaseModel `bun:"table:users,alias:u" json:"-"`
+
+	Username mtype.Username `bun:"username" json:"username"`
+}

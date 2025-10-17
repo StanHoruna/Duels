@@ -166,6 +166,23 @@ definitions:
       tx_hash:
         type: string
     type: object
+  duels-api_internal_model.Notification:
+    properties:
+      created_at:
+        type: string
+      data:
+        items:
+          type: integer
+        type: array
+      id:
+        type: string
+      is_read:
+        type: boolean
+      notification_type:
+        type: integer
+      user_id:
+        type: string
+    type: object
   duels-api_internal_model.Player:
     properties:
       answer:
@@ -220,6 +237,11 @@ definitions:
         type: string
       updated_at:
         type: string
+      username:
+        type: string
+    type: object
+  duels-api_internal_model.UsernameChange:
+    properties:
       username:
         type: string
     type: object
@@ -850,6 +872,179 @@ paths:
       summary: Count duels (public)
       tags:
       - duel-public
+  /notification:
+    get:
+      description: Retrieve all notifications for the authenticated user
+      parameters:
+      - default: 10
+        description: Number of items per page
+        format: int64
+        in: query
+        name: opts.pagination.page_size
+        type: integer
+      - default: 1
+        description: Page number (starting from 1)
+        format: int64
+        in: query
+        name: opts.pagination.page_num
+        type: integer
+      - default: created_at
+        description: Field to order by
+        in: query
+        name: opts.order.order_by
+        type: string
+      - default: '""'
+        description: Order type
+        enum:
+        - desc
+        - asc
+        in: query
+        name: opts.order.order_type
+        type: string
+      - description: First filter column name
+        in: query
+        name: opts.filters[0].column
+        type: string
+      - description: First filter operator
+        in: query
+        name: opts.filters[0].operator
+        type: string
+      - description: First filter value
+        in: query
+        name: opts.filters[0].value
+        type: string
+      - description: First filter OR condition
+        in: query
+        name: opts.filters[0].where_or
+        type: boolean
+      - description: Authorization Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of notifications
+          schema:
+            items:
+              $ref: '#/definitions/duels-api_internal_model.Notification'
+            type: array
+        "401":
+          description: Unauthorized - Invalid or missing claims
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+      security:
+      - BearerAuth: []
+      summary: Get all notifications
+      tags:
+      - notification
+    put:
+      description: Marks all notifications as read for the authenticated user
+      parameters:
+      - description: Authorization Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated notifications
+          schema:
+            items:
+              $ref: '#/definitions/duels-api_internal_model.Notification'
+            type: array
+        "401":
+          description: Unauthorized - Invalid or missing claims
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+      security:
+      - BearerAuth: []
+      summary: Mark all notifications as read
+      tags:
+      - notification
+  /notification/{id}:
+    put:
+      description: Mark a single notification as read by ID
+      parameters:
+      - description: Authorization Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Notification ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated notification
+          schema:
+            $ref: '#/definitions/duels-api_internal_model.Notification'
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "401":
+          description: Unauthorized - Invalid or missing claims
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+      security:
+      - BearerAuth: []
+      summary: Mark a notification as read
+      tags:
+      - notification
+  /notification/unread:
+    get:
+      description: Retrieve the number of unread notifications for the authenticated
+        user
+      parameters:
+      - description: Authorization Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Unread notifications count
+          schema:
+            properties:
+              notifications:
+                type: integer
+            type: object
+        "401":
+          description: Unauthorized - Invalid or missing claims
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+      security:
+      - BearerAuth: []
+      summary: Get unread notifications count
+      tags:
+      - notification
   /user/:
     get:
       description: Returns the authenticated user's profile data based on their JWT
@@ -985,6 +1180,50 @@ paths:
       security:
       - BearerAuth: []
       summary: Upload user images
+      tags:
+      - user
+  /user/username:
+    put:
+      consumes:
+      - application/json
+      description: Updates the username for the currently authenticated user. The
+        new username must be valid and not already taken.
+      parameters:
+      - description: Authorization Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Username change payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/duels-api_internal_model.UsernameChange'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Username changed successfully
+        "400":
+          description: Invalid request parameters or invalid username
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "401":
+          description: Authentication required or invalid token
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "409":
+          description: This username is already taken
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "500":
+          description: Internal server error during username change
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+      security:
+      - BearerAuth: []
+      summary: Change the username of the authenticated user
       tags:
       - user
 swagger: "2.0"

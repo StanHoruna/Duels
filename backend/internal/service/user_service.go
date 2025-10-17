@@ -7,6 +7,7 @@ import (
 	"duels-api/internal/storage/repository"
 	"duels-api/pkg/apperrors"
 	auth "duels-api/pkg/jwt"
+	"duels-api/pkg/mtype"
 	repo "duels-api/pkg/repository"
 	"encoding/base64"
 	"github.com/gagliardetto/solana-go"
@@ -24,6 +25,7 @@ type UserService struct {
 }
 
 func NewUserService(
+	fileService *FileService,
 	userRepository *repository.UserRepository,
 	jwtStorage *cache.JWTStorage,
 	jwtAuth auth.JWTAuthenticator,
@@ -34,6 +36,7 @@ func NewUserService(
 		JWTStorage:         jwtStorage,
 		JWTAuth:            jwtAuth,
 		TransactionManager: transactionManager,
+		FileService:        fileService,
 	}
 }
 
@@ -139,14 +142,24 @@ func (s *UserService) UpdateProfilePicture(
 	userID uuid.UUID,
 	file *multipart.FileHeader,
 ) (string, error) {
+	if s.UserRepository == nil || s.FileService == nil {
+		return "", apperrors.Internal("user service not fully initialized", nil)
+	}
+	if file == nil {
+		return "", apperrors.BadRequest("image file is required")
+	}
+
 	user, err := s.UserRepository.GetByID(ctx, userID)
 	if err != nil {
 		return "", apperrors.Internal("failed to get user", err)
 	}
+	if user == nil {
+		return "", apperrors.NotFound("user not found")
+	}
 
 	if user.ImageUrl != "" && !s.FileService.IsDefaultUserIcon(user.ImageUrl) {
 		if err = s.FileService.RemoveUserFile(user.ImageUrl); err != nil {
-			return "", err
+			return "", apperrors.Internal("failed to remove previous profile image", err)
 		}
 	}
 
@@ -161,4 +174,26 @@ func (s *UserService) UpdateProfilePicture(
 	}
 
 	return newURL, nil
+}
+
+func (s *UserService) ChangeUsername(
+	ctx context.Context,
+	userID uuid.UUID,
+	username mtype.Username,
+) error {
+	if !username.Valid() {
+		return apperrors.BadRequest("invalid username")
+	}
+	user := &model.User{ID: userID, Username: username}
+
+	err := s.UserRepository.Update(ctx, user)
+	if err != nil {
+		if repo.DuplicateKeyViolation(err) {
+			return apperrors.AlreadyExist("this username is already taken")
+		}
+
+		return apperrors.Internal("failed to get user by id", err)
+	}
+
+	return nil
 }

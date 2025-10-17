@@ -926,6 +926,270 @@
                 }
             }
         },
+        "/notification": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve all notifications for the authenticated user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notification"
+                ],
+                "summary": "Get all notifications",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "format": "int64",
+                        "default": 10,
+                        "description": "Number of items per page",
+                        "name": "opts.pagination.page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "format": "int64",
+                        "default": 1,
+                        "description": "Page number (starting from 1)",
+                        "name": "opts.pagination.page_num",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "created_at",
+                        "description": "Field to order by",
+                        "name": "opts.order.order_by",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "desc",
+                            "asc"
+                        ],
+                        "type": "string",
+                        "default": "\"\"",
+                        "description": "Order type",
+                        "name": "opts.order.order_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "First filter column name",
+                        "name": "opts.filters[0].column",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "First filter operator",
+                        "name": "opts.filters[0].operator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "First filter value",
+                        "name": "opts.filters[0].value",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "First filter OR condition",
+                        "name": "opts.filters[0].where_or",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of notifications",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/duels-api_internal_model.Notification"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Invalid or missing claims",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Marks all notifications as read for the authenticated user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notification"
+                ],
+                "summary": "Mark all notifications as read",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated notifications",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/duels-api_internal_model.Notification"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Invalid or missing claims",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    }
+                }
+            }
+        },
+        "/notification/unread": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve the number of unread notifications for the authenticated user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notification"
+                ],
+                "summary": "Get unread notifications count",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Unread notifications count",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "notifications": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Invalid or missing claims",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    }
+                }
+            }
+        },
+        "/notification/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Mark a single notification as read by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notification"
+                ],
+                "summary": "Mark a notification as read",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Notification ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated notification",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_internal_model.Notification"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Invalid or missing claims",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    }
+                }
+            }
+        },
         "/user/": {
             "get": {
                 "security": [
@@ -1123,6 +1387,73 @@
                     },
                     "500": {
                         "description": "Internal server error during file save",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/username": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates the username for the currently authenticated user. The new username must be valid and not already taken.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Change the username of the authenticated user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Username change payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_internal_model.UsernameChange"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Username changed successfully"
+                    },
+                    "400": {
+                        "description": "Invalid request parameters or invalid username",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "409": {
+                        "description": "This username is already taken",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error during username change",
                         "schema": {
                             "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
                         }
@@ -1385,6 +1716,32 @@
                 }
             }
         },
+        "duels-api_internal_model.Notification": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_read": {
+                    "type": "boolean"
+                },
+                "notification_type": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
         "duels-api_internal_model.Player": {
             "type": "object",
             "properties": {
@@ -1467,6 +1824,14 @@
                 "updated_at": {
                     "type": "string"
                 },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "duels-api_internal_model.UsernameChange": {
+            "type": "object",
+            "properties": {
                 "username": {
                     "type": "string"
                 }

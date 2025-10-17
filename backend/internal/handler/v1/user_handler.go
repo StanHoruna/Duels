@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"duels-api/internal/model"
 	_ "duels-api/internal/model"
 	"duels-api/internal/service"
 	"duels-api/pkg/apperrors"
@@ -31,6 +32,7 @@ func (h *UserHandler) RegisterRoutes(app *fiber.App, auth *AuthHandler) {
 		userGroup.Get("/", h.GetUser)
 		userGroup.Put("/profile-picture", h.SetProfilePicture)
 
+		userGroup.Put("/username", h.ChangeUsername)
 		userGroup.Put("/upload-images", h.UploadImage, auth.UploadUserImageMiddleware)
 	}
 }
@@ -97,6 +99,41 @@ func (h *UserHandler) SetProfilePicture(c fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"image_url": imageURL,
 	})
+}
+
+// ChangeUsername godoc
+//
+//	@Summary		Change the username of the authenticated user
+//	@Description	Updates the username for the currently authenticated user. The new username must be valid and not already taken.
+//	@Tags			user
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			Authorization	header		string					true	"Authorization Bearer token"
+//	@Param			request			body		model.UsernameChange	true	"Username change payload"
+//	@Success		204				{object}	nil						"Username changed successfully"
+//	@Failure		400				{object}	apperrors.ErrorPublic	"Invalid request parameters or invalid username"
+//	@Failure		401				{object}	apperrors.ErrorPublic	"Authentication required or invalid token"
+//	@Failure		409				{object}	apperrors.ErrorPublic	"This username is already taken"
+//	@Failure		500				{object}	apperrors.ErrorPublic	"Internal server error during username change"
+//	@Router			/user/username [put]
+func (h *UserHandler) ChangeUsername(c fiber.Ctx) error {
+	var req model.UsernameChange
+	if err := c.Bind().JSON(&req); err != nil {
+		return apperrors.BadRequest("invalid request params")
+	}
+
+	claims, ok := c.Locals("claims").(auth.TokenClaims)
+	if !ok {
+		return apperrors.Unauthorized("claims not found")
+	}
+
+	err := h.UserService.ChangeUsername(c.Context(), claims.UserID, req.Username)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // UploadImage godoc
