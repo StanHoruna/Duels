@@ -1,0 +1,15 @@
+version: '3.9'
+services:
+  duels-front:
+    image: '${NAME}'
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ${NAME}
+    hostname: ${NAME}
+    restart: always
+    env_file: .env
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - '127.0.0.1:${PORT}:80'
