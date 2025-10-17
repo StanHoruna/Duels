@@ -27,7 +27,10 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
+var USDCMintAddress = solana.MustPublicKeyFromBase58("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v")
+
 const (
+	USDCMintDecimals           = 6
 	USDCPriceMultiplier        = 1_000_000
 	Finalized                  = rpc.CommitmentFinalized
 	Confirmed                  = rpc.CommitmentConfirmed
@@ -199,6 +202,78 @@ func (s *WalletService) InitAndJoinSolanaRoomWithExternalWallet(
 	}
 
 	instructions, err := GetTxInstructions(txInit, txJoin)
+	if err != nil {
+		return "", err
+	}
+
+	tx, err := solana.NewTransaction(
+		instructions,
+		recentBlockhashResp.Value.Blockhash,
+		solana.TransactionPayer(publicKey))
+	if err != nil {
+		return "", apperrors.ServiceUnavailable("failed to generate a transaction", err)
+	}
+
+	_, err = tx.PartialSign(func(key solana.PublicKey) *solana.PrivateKey {
+		if key.Equals(s.solanaAdminPrivateKey.PublicKey()) {
+			return &s.solanaAdminPrivateKey
+		}
+		return nil
+	})
+	if err != nil {
+		return "", apperrors.ServiceUnavailable("failed to sign transaction", err)
+	}
+
+	txBytes, err := tx.MarshalBinary()
+	if err != nil {
+		return "", apperrors.ServiceUnavailable("failed to marshal transaction", err)
+	}
+
+	encodedTx := base64.StdEncoding.EncodeToString(txBytes)
+
+	return encodedTx, nil
+}
+
+func (s *WalletService) JoinSolanaRoomWithExternalWallet(ctx context.Context, duel *model.Duel, user *model.User, answer uint8) (string, error) {
+	publicKey, err := solana.PublicKeyFromBase58(user.PublicAddress)
+	if err != nil {
+		return "", apperrors.Internal("failed to parse user's public key", err)
+	}
+
+	userTokenAccount, _, err := solana.FindAssociatedTokenAddress(publicKey, USDCMintAddress)
+	if err != nil {
+		return "", apperrors.Internal("failed to get user associated token address", err)
+	}
+
+	hasEnoughBalance, err := s.HasEnoughTokenBalance(ctx, userTokenAccount, duel.DuelPrice*USDCPriceMultiplier)
+	if err != nil {
+		return "", err
+	}
+
+	if !hasEnoughBalance {
+		return "", apperrors.BadRequest("not enough balance to proceed a transaction")
+	}
+
+	multiplier := (duel.PlayersCount)/10 + 1
+
+	reqBody := map[string]any{
+		"multiplier": multiplier,
+		"answer":     answer,
+		"pda_nr":     duel.RoomNumber,
+		"payer":      publicKey,
+	}
+
+	txJoin, err := s.GetTxFromContractService(reqBody, "join")
+	if err != nil {
+		return "", err
+	}
+
+	recentBlockhashResp, err := s.SolanaRPC.GetLatestBlockhash(ctx, Finalized)
+	if err != nil {
+		return "", apperrors.Internal("failed to get recent blockhash", err)
+	}
+
+	instructions, err := GetTxInstructions(txJoin)
 	if err != nil {
 		return "", err
 	}

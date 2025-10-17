@@ -7,12 +7,13 @@ import (
 	"duels-api/internal/storage/repository"
 	"duels-api/pkg/apperrors"
 	repo "duels-api/pkg/repository"
+	"time"
+
 	"github.com/gagliardetto/solana-go"
 	"github.com/go-resty/resty/v2"
 	"github.com/google/uuid"
 	"github.com/uptrace/bun"
 	"go.uber.org/zap"
-	"time"
 )
 
 type DuelService struct {
@@ -319,7 +320,7 @@ func (s *DuelService) SignJoinCryptoDuelTransaction(
 		return "", err
 	}
 
-	tx, err := s.WalletService.InitAndJoinSolanaRoomWithExternalWallet(ctx, duel, user, req.Answer)
+	tx, err := s.WalletService.JoinSolanaRoomWithExternalWallet(ctx, duel, user, req.Answer)
 	if err != nil {
 		return "", err
 	}
