@@ -19,6 +19,7 @@ import (
 type UserService struct {
 	FileService        *FileService
 	UserRepository     *repository.UserRepository
+	DuelRepository     *repository.DuelRepository
 	JWTStorage         *cache.JWTStorage
 	JWTAuth            auth.JWTAuthenticator
 	TransactionManager *repo.TransactionManager
@@ -27,12 +28,14 @@ type UserService struct {
 func NewUserService(
 	fileService *FileService,
 	userRepository *repository.UserRepository,
+	duelRepository *repository.DuelRepository,
 	jwtStorage *cache.JWTStorage,
 	jwtAuth auth.JWTAuthenticator,
 	transactionManager *repo.TransactionManager,
 ) *UserService {
 	return &UserService{
 		UserRepository:     userRepository,
+		DuelRepository:     duelRepository,
 		JWTStorage:         jwtStorage,
 		JWTAuth:            jwtAuth,
 		TransactionManager: transactionManager,
@@ -196,4 +199,13 @@ func (s *UserService) ChangeUsername(
 	}
 
 	return nil
+}
+
+func (s *UserService) GetUserStats(ctx context.Context, userID uuid.UUID) (*model.UserStats, error) {
+	stats, err := s.DuelRepository.GetUserStats(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return stats, nil
 }

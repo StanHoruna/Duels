@@ -1322,6 +1322,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Aggregated duel stats for the authenticated user (participated, wins/losses, earned/lost, etc.)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Get user duel stats",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved user duel stats",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "stats": {
+                                    "$ref": "#/definitions/duels-api_internal_model.UserStats"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/duels-api_pkg_apperrors.ErrorPublic"
+                        }
+                    }
+                }
+            }
+        },
         "/user/upload-images": {
             "put": {
                 "security": [
@@ -1834,6 +1885,35 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "duels-api_internal_model.UserStats": {
+            "type": "object",
+            "properties": {
+                "earned_amount": {
+                    "type": "number"
+                },
+                "losses_count": {
+                    "type": "integer"
+                },
+                "lost_amount": {
+                    "type": "number"
+                },
+                "net_profit": {
+                    "type": "number"
+                },
+                "participated": {
+                    "type": "integer"
+                },
+                "refunded_amount": {
+                    "type": "number"
+                },
+                "refunded_count": {
+                    "type": "integer"
+                },
+                "wins_count": {
+                    "type": "integer"
                 }
             }
         },

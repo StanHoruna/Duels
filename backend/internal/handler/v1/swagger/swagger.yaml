@@ -240,6 +240,25 @@ definitions:
       username:
         type: string
     type: object
+  duels-api_internal_model.UserStats:
+    properties:
+      earned_amount:
+        type: number
+      losses_count:
+        type: integer
+      lost_amount:
+        type: number
+      net_profit:
+        type: number
+      participated:
+        type: integer
+      refunded_amount:
+        type: number
+      refunded_count:
+        type: integer
+      wins_count:
+        type: integer
+    type: object
   duels-api_internal_model.UsernameChange:
     properties:
       username:
@@ -1125,6 +1144,39 @@ paths:
       security:
       - BearerAuth: []
       summary: Set user profile picture
+      tags:
+      - user
+  /user/stats:
+    get:
+      description: Aggregated duel stats for the authenticated user (participated,
+        wins/losses, earned/lost, etc.)
+      parameters:
+      - description: Authorization Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved user duel stats
+          schema:
+            properties:
+              stats:
+                $ref: '#/definitions/duels-api_internal_model.UserStats'
+            type: object
+        "401":
+          description: Unauthorized - missing or invalid token
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/duels-api_pkg_apperrors.ErrorPublic'
+      security:
+      - BearerAuth: []
+      summary: Get user duel stats
       tags:
       - user
   /user/upload-images:

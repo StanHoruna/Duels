@@ -34,6 +34,8 @@ func (h *UserHandler) RegisterRoutes(app *fiber.App, auth *AuthHandler) {
 
 		userGroup.Put("/username", h.ChangeUsername)
 		userGroup.Put("/upload-images", h.UploadImage, auth.UploadUserImageMiddleware)
+
+		userGroup.Get("/stats", h.GetStats)
 	}
 }
 
@@ -173,4 +175,29 @@ func (h *UserHandler) UploadImage(c fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"image_urls": fileNames,
 	})
+}
+
+// GetStats godoc
+//
+//	@Summary		Get user duel stats
+//	@Description	Aggregated duel stats for the authenticated user (participated, wins/losses, earned/lost, etc.)
+//	@Tags			user
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			Authorization	header		string					true	"Authorization Bearer token"
+//	@Success		200				{object}	object{stats=model.UserStats}	"Successfully retrieved user duel stats"
+//	@Failure		401				{object}	apperrors.ErrorPublic	"Unauthorized - missing or invalid token"
+//	@Failure		500				{object}	apperrors.ErrorPublic	"Internal server error"
+//	@Router			/user/stats [get]
+func (h *UserHandler) GetStats(c fiber.Ctx) error {
+	claims, ok := c.Locals("claims").(auth.TokenClaims)
+	if !ok {
+		return apperrors.Unauthorized("claims not found")
+	}
+
+	resp, err := h.UserService.GetUserStats(c.Context(), claims.UserID)
+	if err != nil {
+		return err
+	}
+	return c.JSON(resp)
 }

@@ -282,3 +282,60 @@ func (r *DuelRepository) FindOwnerIDByDuelID(
 
 	return ownerID, nil
 }
+
+func (r *DuelRepository) GetUserStats(
+	ctx context.Context,
+	userID uuid.UUID,
+) (*model.UserStats, error) {
+	row := new(model.UserStats)
+
+	q := r.DB.NewSelect().
+		TableExpr("players AS p").
+		Join("JOIN duels AS d ON d.id = p.duel_id").
+		Where("p.user_id = ?", userID).
+		ColumnExpr("COUNT(*)::bigint AS participated").
+		ColumnExpr("SUM(CASE WHEN p.final_status = ? AND p.is_winner THEN 1 ELSE 0 END)::bigint AS wins_count",
+			model.PlayerStatusResolved).
+		ColumnExpr("SUM(CASE WHEN p.final_status = ? AND NOT p.is_winner THEN 1 ELSE 0 END)::bigint AS losses_count",
+			model.PlayerStatusResolved).
+		ColumnExpr("SUM(CASE WHEN p.final_status = ? THEN 1 ELSE 0 END)::bigint AS refunded_count",
+			model.PlayerStatusRefunded).
+		ColumnExpr(`
+COALESCE(
+  SUM(
+    CASE
+      WHEN p.final_status = ? AND p.is_winner
+      THEN p.win_amount::double precision  
+      ELSE 0.0
+    END
+  ),
+  0.0
+) AS earned_amount`, model.PlayerStatusResolved).
+		ColumnExpr(`
+COALESCE(
+  SUM(
+    CASE
+      WHEN p.final_status = ? AND NOT p.is_winner
+      THEN d.duel_price::double precision       
+      ELSE 0.0
+    END
+  ),
+  0.0
+) AS lost_amount`, model.PlayerStatusResolved).
+		ColumnExpr(`
+COALESCE(
+  SUM(
+    CASE
+      WHEN p.final_status = ?
+      THEN d.duel_price::double precision
+      ELSE 0.0
+    END
+  ),
+  0.0
+) AS refunded_amount`, model.PlayerStatusRefunded)
+
+	if err := q.Scan(ctx, row); err != nil {
+		return nil, err
+	}
+	return row, nil
+}

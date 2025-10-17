@@ -47,3 +47,14 @@ type UsernameChange struct {
 
 	Username mtype.Username `bun:"username" json:"username"`
 }
+
+type UserStats struct {
+	Participated   uint64  `bun:"participated" json:"participated"`
+	WinsCount      uint64  `bun:"wins_count" json:"wins_count"`
+	LossesCount    uint64  `bun:"losses_count" json:"losses_count"`
+	RefundedCount  uint64  `bun:"refunded_count" json:"refunded_count"`
+	EarnedAmount   float64 `bun:"earned_amount" json:"earned_amount"`
+	LostAmount     float64 `bun:"lost_amount" json:"lost_amount"`
+	RefundedAmount float64 `bun:"refunded_amount" json:"refunded_amount"`
+	NetProfit      float64 `bun:"net_profit" json:"net_profit"`
+}
