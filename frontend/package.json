@@ -1,0 +1,31 @@
+{
+  "name": "duels-front",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "NODE_OPTIONS='--max-old-space-size=8192' && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@solana/buffer-layout-utils": "^0.3.0",
+    "@solana/spl-token": "^0.4.14",
+    "@solana/wallet-adapter-phantom": "^0.9.28",
+    "@solana/web3.js": "^1.98.4",
+    "@vueuse/components": "^13.9.0",
+    "@vueuse/core": "^13.9.0",
+    "axios": "^1.12.2",
+    "js-cookie": "^3.0.5",
+    "lodash": "^4.17.21",
+    "pinia": "^3.0.3",
+    "vue": "^3.5.22",
+    "vue-router": "^4.6.3"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.1",
+    "sass": "^1.93.2",
+    "vite": "^7.1.10",
+    "vite-plugin-node-polyfills": "^0.24.0"
+  }
+}
