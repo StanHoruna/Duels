@@ -183,6 +183,34 @@ func (r *DuelRepository) GetUserDuels(
 	return duels, nil
 }
 
+func (r *DuelRepository) GetUserDuelsAsParticipant(
+	ctx context.Context,
+	userID uuid.UUID,
+	options *repository.Options,
+) ([]model.DuelShow, error) {
+	duels := make([]model.DuelShow, 0)
+
+	q := r.DB.NewSelect().
+		Model(&duels).
+		ColumnExpr("duels.*").
+		ColumnExpr("(p.user_id IS NOT NULL) as joined").
+		ColumnExpr("p.final_status as player_status").
+		ColumnExpr("p.answer as your_answer").
+		ColumnExpr("COALESCE(yes_counts.yes_count, 0) AS yes_count").
+		ColumnExpr("duels.players_count - COALESCE(yes_counts.yes_count, 0) as no_count").
+		ColumnExpr("u.image_url AS owner_image_url").
+		Join("left join users u ON u.id = duels.owner_id").
+		Join("left join players p on p.duel_id = duels.id AND p.user_id = ?", userID).
+		Join("left join (select duel_id, COUNT(*) AS yes_count FROM players WHERE answer = 1 GROUP BY duel_id) AS yes_counts ON yes_counts.duel_id = duels.id")
+	q = options.Apply(q)
+
+	if err := q.Scan(ctx); err != nil {
+		return nil, err
+	}
+
+	return duels, nil
+}
+
 func (r *DuelRepository) JoinDuel(
 	ctx context.Context,
 	userID uuid.UUID,

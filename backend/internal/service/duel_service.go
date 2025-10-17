@@ -104,6 +104,15 @@ func (s *DuelService) GetMyDuels(ctx context.Context, userID uuid.UUID, options 
 	return duels, nil
 }
 
+func (s *DuelService) GetMyDuelsAsParticipant(ctx context.Context, userID uuid.UUID, options *repo.Options) ([]model.DuelShow, error) {
+	duels, err := s.DuelRepository.GetUserDuelsAsParticipant(ctx, userID, options)
+	if err != nil {
+		return nil, apperrors.Internal("failed to get my duels", err)
+	}
+
+	return duels, nil
+}
+
 func (s *DuelService) GetDuelByID(ctx context.Context,
 	duelID uuid.UUID,
 	userID uuid.UUID,

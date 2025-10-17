@@ -5,6 +5,7 @@ import (
 	"duels-api/internal/service"
 	"duels-api/pkg/apperrors"
 	auth "duels-api/pkg/jwt"
+
 	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
 )
@@ -47,6 +48,7 @@ func (h *DuelHandler) RegisterRoutes(app *fiber.App, auth *AuthHandler) {
 	{
 		duel.Get("/all", h.GetAllDuelsAuthorized)
 		duel.Get("/my", h.GetMyDuels)
+		duel.Get("/my/participant", h.GetMyDuelsAsParticipant)
 		duel.Get("/:id", h.GetDuelByIDAuthorized)
 	}
 }
@@ -368,6 +370,22 @@ func (h *DuelHandler) GetMyDuels(c fiber.Ctx) error {
 		return apperrors.Unauthorized("claims not found")
 	}
 	duels, err := h.DuelService.GetMyDuels(c.Context(), claims.UserID, &req.Opts)
+	if err != nil {
+		return err
+	}
+	return c.JSON(duels)
+}
+
+func (h *DuelHandler) GetMyDuelsAsParticipant(c fiber.Ctx) error {
+	var req model.OptsReq
+	if err := c.Bind().Query(&req); err != nil {
+		return apperrors.BadRequest("invalid request params")
+	}
+	claims, ok := c.Locals("claims").(auth.TokenClaims)
+	if !ok {
+		return apperrors.Unauthorized("claims not found")
+	}
+	duels, err := h.DuelService.GetMyDuelsAsParticipant(c.Context(), claims.UserID, &req.Opts)
 	if err != nil {
 		return err
 	}
