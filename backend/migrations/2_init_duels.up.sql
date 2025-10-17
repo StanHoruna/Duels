@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS duels
 (
     id                     UUID PRIMARY KEY,
     owner_id               UUID        NOT NULL,
-    room_number            INTEGER     NULL,
+    room_number            INTEGER     NULL, -- todo change to (alter table duels ALTER COLUMN room_number TYPE bigint;)
     players_count          INTEGER     NOT NULL DEFAULT 0,
     refunded_players_count INTEGER     NOT NULL DEFAULT 0,
     winners_count          INTEGER     NOT NULL DEFAULT 0,

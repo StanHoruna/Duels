@@ -34,7 +34,7 @@ type Duel struct {
 
 	ID                   uuid.UUID `bun:",pk,type:uuid,default:uuid_generate_v4()" json:"id"`
 	OwnerID              uuid.UUID `bun:"owner_id,type:uuid,notnull" json:"owner_id"`
-	RoomNumber           uint64    `bun:"room_number,type:integer,nullzero" json:"room_number"`
+	RoomNumber           uint64    `bun:"room_number,type:integer,nullzero" json:"room_number"` // todo bigint
 	PlayersCount         uint64    `bun:"players_count,type:integer,notnull,default:0" json:"players_count"`
 	RefundedPlayersCount uint64    `bun:"refunded_players_count,type:integer,notnull,default:0" json:"refunded_players_count"`
 	WinnersCount         uint64    `bun:"winners_count,type:integer,notnull,default:0" json:"winners_count"`
