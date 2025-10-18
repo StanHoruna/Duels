@@ -107,6 +107,9 @@ func (s *FileService) saveFile(
 		return "", apperrors.Internal("failed to read an image", err)
 	}
 
+	directory := filepath.Join(mediaFilesDir, dir)
+	_ = os.MkdirAll(directory, os.ModePerm)
+
 	fileName := uuid.New().String() + extension
 	savePath := filepath.Join(mediaFilesDir, dir, fileName)
 
