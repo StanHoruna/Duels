@@ -41,6 +41,7 @@ defineExpose({
 .input {
   outline: none;
   width: 100%;
+  width: -webkit-fill-available;
   height: 48px;
   transition: 0.3s;
   line-height: 100%;

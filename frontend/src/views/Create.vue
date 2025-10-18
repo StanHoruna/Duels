@@ -265,7 +265,7 @@ const submitForm = async (answer) => {
         bg_url: formData.value.bg_url,
         question: formData.value.question,
         duel_price: parseFloat(formData.value.duel_price),
-        commission: formData.value.commission,
+        commission: parseFloat(formData.value.commission),
         event_date: new Date(formData.value.event_date).toISOString(),
         answer: answer,
       }
