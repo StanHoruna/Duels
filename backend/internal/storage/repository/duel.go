@@ -373,3 +373,16 @@ COALESCE(
 	}
 	return row, nil
 }
+
+func (r *DuelRepository) UpdateOwnerUsername(
+	ctx context.Context,
+	userID uuid.UUID,
+	username string,
+) error {
+	_, err := r.DB.NewUpdate().
+		Model((*model.Duel)(nil)).
+		Set("username = ?", username).
+		Where("owner_id = ?", userID).
+		Exec(ctx)
+	return err
+}
