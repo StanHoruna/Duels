@@ -1,5 +1,12 @@
 <template>
   <div class="page">
+    <video
+        src='./assets/videos/bcg.mp4'
+        playsinline
+        muted
+        autoplay
+        loop
+    ></video>
     <div class="page__container">
       <Header v-if="route.name !== 'duel'"/>
       <div
@@ -11,6 +18,8 @@
       <NavBar v-if="route.name !== 'duel'"/>
       <Notifications/>
     </div>
+
+    <Embed />
   </div>
 </template>
 
@@ -21,6 +30,7 @@ import {useUserStore} from "./store/userStore.js";
 import {onBeforeMount, onMounted} from "vue";
 import {useRoute} from "vue-router";
 import Notifications from "./components/Notifications.vue";
+import Embed from "./components/Embed.vue";
 
 const route = useRoute();
 
@@ -35,11 +45,31 @@ onBeforeMount(async () => {
 @import "./assets/scss/main";
 
 .page {
-  background-image: url("assets/images/bcg.svg");
-  background-size: 50vw;
-  background-repeat: repeat;
+  position: relative;
+  video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -2;
+  }
+  &:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: rgba(0, 0, 0, 0.8);
+  }
 
-  animation: animatedBackground 30s linear infinite;
+  //background-image: url("assets/images/bcg.svg");
+  //background-size: 50vw;
+  //background-repeat: repeat;
+  //animation: animatedBackground 30s linear infinite;
 
   min-height: 100dvh;
   overflow: hidden;
@@ -92,6 +122,12 @@ onBeforeMount(async () => {
   .page {
     background: #141414;
     padding: 0;
+    video {
+      display: none;
+    }
+    &:after {
+      content: none;
+    }
     &__container {
       width: 100vw;
       height: 100dvh;

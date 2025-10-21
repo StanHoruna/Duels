@@ -10,7 +10,7 @@
       </div>
     </div>
     <router-link to="/" class="header__center">
-      <LogoSVG/>
+      <LogoSVG :class="{ spin: isSpinning }"/>
     </router-link>
     <div class="header__right">
       <button @click="walletHandler">
@@ -35,11 +35,16 @@ import USDCSVG from "./SVG/USDCSVG.vue";
 import SingInSVG from "./SVG/SingInSVG.vue";
 import LogOutSVG from "./SVG/LogOutSVG.vue";
 import {toFix} from "../helpers/filters.js";
-import Avatar from "./Avatar.vue";
+import {ref, watch} from "vue";
+import {useRoute} from "vue-router";
+
+const route = useRoute();
 
 const walletStore = useWalletStore();
 const userStore = useUserStore();
 const logOutStore = useLogOutStore();
+
+const isSpinning = ref(false);
 
 const walletHandler = async () => {
   if (userStore.userData) {
@@ -48,6 +53,15 @@ const walletHandler = async () => {
     await walletStore.connect();
   }
 };
+
+watch(() => route.fullPath, () => {
+  if (isSpinning.value) return;
+
+  isSpinning.value = true
+  setTimeout(() => {
+    isSpinning.value = false
+  }, 1000)
+}, { immediate: false });
 </script>
 
 <style scoped lang="scss">
@@ -121,6 +135,19 @@ const walletHandler = async () => {
       gap: 8px;
       cursor: pointer;
     }
+  }
+}
+
+.spin {
+  animation: logo-spin 1s ease-out;
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(720deg);
   }
 }
 </style>

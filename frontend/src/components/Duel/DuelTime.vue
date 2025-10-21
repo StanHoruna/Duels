@@ -38,7 +38,7 @@ const updateTimer = () => {
   const diff = targetTime - now;
 
   if (diff <= 0) {
-    formattedTime.value = "00h : 00m : 00s";
+    formattedTime.value = "Waiting for results";
     return;
   }
 

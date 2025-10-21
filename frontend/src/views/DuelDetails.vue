@@ -14,9 +14,17 @@
 
     <div class="duelDetails__content">
       <div class="duelDetails__container">
+        <div v-if="isOwner" class="duelDetails__owner">
+          <InfoSVG />
+          <div>
+            Resolve the duel, choose which answer turned out to be true.
+            After that, winners will receive their rewards and <span>you’ll get your commission.</span>
+          </div>
+        </div>
+
         <DuelTitle :duel="duelData" />
 
-        <Button name="Share this Duel" variant="share">
+        <Button name="Share this Duel" variant="share" @click="copyShareLink(duelData?.id)">
           <template #icon>
             <ShareSVG />
           </template>
@@ -55,7 +63,7 @@
 
 <script setup>
 import {useRoute, useRouter} from "vue-router";
-import {ref, watch} from "vue";
+import {computed, ref, watch} from "vue";
 import {GetDuelByID, GetDuelByIDPublic} from "../api/index.js";
 import {getFile} from "../helpers/filters.js";
 import DuelTime from "../components/Duel/DuelTime.vue";
@@ -67,16 +75,23 @@ import ShareSVG from "../components/SVG/ShareSVG.vue";
 import Avatar from "../components/Avatar.vue";
 import {useToken} from "../composables/useToken.js";
 import {useUserStore} from "../store/userStore.js";
+import {useClipboard} from "../composables/useClipboard.js";
+import InfoSVG from "../components/SVG/InfoSVG.vue";
 
 const route = useRoute();
 const router = useRouter();
 
 const { getToken } = useToken();
+const { copyShareLink } = useClipboard();
 
 const userStore = useUserStore();
 
 const duelData = ref(null);
 const duelPlayers = ref([]);
+
+const isOwner = computed(() => {
+  return userStore.userData?.id === duelData.value?.owner_id;
+})
 
 const backHandler = () => {
   router.push({ name: 'home' });
@@ -243,6 +258,26 @@ watch(() => userStore.userData, async () => {
       &.green {
         color: #D0F267;
       }
+    }
+  }
+  &__owner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #D0F267;
+    background: linear-gradient(90deg, rgba(208, 242, 103, 0.00) 0.09%, rgba(208, 242, 103, 0.20) 96.99%), #1C1C1C;
+    margin-bottom: 12px;
+    color: #FFF;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+    ::v-deep(svg) {
+      min-width: 32px;
+    }
+    span {
+      color: #D0F267;
     }
   }
 }

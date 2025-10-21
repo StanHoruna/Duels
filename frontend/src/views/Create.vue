@@ -102,19 +102,22 @@
       />
     </div>
 
-    <div class="answer-buttons">
-      <Button
-          :disabled="isLoading || !isFormValid"
-          name="No"
-          variant="red"
-          @click="submitForm(0)"
-      />
-      <Button
-          :disabled="isLoading || !isFormValid"
-          name="Yes"
-          variant="green"
-          @click="submitForm(1)"
-      />
+    <div class="form-field">
+      <label class="field-label">Chosen one and confirm</label>
+      <div class="answer-buttons">
+        <Button
+            :disabled="isLoading || !isFormValid"
+            name="No"
+            variant="red"
+            @click="submitForm(0)"
+        />
+        <Button
+            :disabled="isLoading || !isFormValid"
+            name="Yes"
+            variant="green"
+            @click="submitForm(1)"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -274,11 +277,13 @@ const submitForm = async (answer) => {
       const tx_hash = await walletStore.sendTx(resp.data?.tx);
 
       if (tx_hash) {
-        await CreateDuel(obj, tx_hash);
+        setTimeout(async () => {
+          await CreateDuel(obj, tx_hash);
 
-        await walletStore.getBalance();
+          await walletStore.getBalance();
 
-        await router.push({ name: 'home' });
+          await router.push({ name: 'home' });
+        })
       }
     }
   } catch (error) {
@@ -309,6 +314,9 @@ onMounted(() => {
 
 .form-field {
   margin-bottom: 20px;
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 
 .field-label {

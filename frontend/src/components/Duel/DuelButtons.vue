@@ -3,6 +3,10 @@
     <div class="duel__buttons_text">{{ duel?.cancellation_reason }}</div>
   </div>
 
+  <div v-if="buttonsVariant === 'waiting'" class="duel__buttons">
+    <div class="duel__buttons_text">Waiting for results</div>
+  </div>
+
   <div v-if="buttonsVariant === 'resolve'" class="duel__buttons">
     <Button :disabled="isResolveLoading" @click="resolveHandler(0)" name="No wins" variant="red"/>
     <Button :disabled="isResolveLoading" @click="resolveHandler(1)" name="Yes wins" variant="green"/>
@@ -48,6 +52,10 @@ const isVoteLoading = ref(false);
 const isResolveLoading = ref(false);
 
 const buttonsVariant = computed(() => {
+  const targetTime = new Date(props.duel?.event_date).getTime();
+  const now = Date.now();
+  const diff = targetTime - now;
+
   // status
   if (props.duel?.status === 5 || props.duel?.status === 6) {
     if (props.duel?.status === 5) {
@@ -57,13 +65,17 @@ const buttonsVariant = computed(() => {
       return 'result-cancel';
     }
   }
-  // vote
-  if (props.duel?.your_answer === null) {
-    return 'vote';
-  }
   // resolve
   if ((props.tab === 'Resolve' || route.name === 'duel') && userStore.userData?.id === props.duel?.owner_id) {
     return 'resolve';
+  }
+  // waiting for results
+  if (diff <= 0) {
+    return 'waiting';
+  }
+  // vote
+  if (props.duel?.your_answer === null) {
+    return 'vote';
   }
   // voted
   if (props.duel?.your_answer !== null) {
@@ -93,11 +105,13 @@ const voteHandler = async (answer) => {
       const tx_hash = await walletStore.sendTx(resp.data?.tx);
 
       if (tx_hash) {
-        await JoinDuel(duel_id, answer, tx_hash);
+        setTimeout(async () => {
+          await JoinDuel(duel_id, answer, tx_hash);
 
-        await walletStore.getBalance();
+          await walletStore.getBalance();
 
-        emits('getDuel');
+          emits('getDuel');
+        }, 1000)
       }
     }
   } catch (e) {

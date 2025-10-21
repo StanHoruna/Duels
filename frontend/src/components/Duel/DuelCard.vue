@@ -5,7 +5,7 @@
 
       <DuelTime :duel="duel" />
 
-      <button class="duel__share">
+      <button class="duel__share" @click.stop="copyShareLink(duel?.id)">
         <ShareSVG/>
       </button>
     </div>
@@ -24,8 +24,10 @@ import {useRouter} from "vue-router";
 import DuelButtons from "./DuelButtons.vue";
 import DuelTime from "./DuelTime.vue";
 import DuelTitle from "./DuelTitle.vue";
+import {useClipboard} from "../../composables/useClipboard.js";
 
 const router = useRouter();
+const { copyShareLink } = useClipboard();
 
 const props = defineProps({
   duel: { type: Object, required: true },

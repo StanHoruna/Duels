@@ -9,7 +9,12 @@
       <span>Duels</span>
     </router-link>
     <router-link to="/history" class="nav__item" active-class="active">
-      <HistorySVG />
+      <div class="nav__item_wrap">
+        <HistorySVG />
+        <div v-if="historyCount" class="nav__item_count">
+          <p>{{ historyCount }}</p>
+        </div>
+      </div>
       <span>History</span>
     </router-link>
   </div>
@@ -19,6 +24,33 @@
 import LogoColorSVG from "./SVG/LogoColorSVG.vue";
 import PlusSVG from "./SVG/PlusSVG.vue";
 import HistorySVG from "./SVG/HistorySVG.vue";
+import {ref, watch} from "vue";
+import {GetMyDuels} from "../api/index.js";
+import {useUserStore} from "../store/userStore.js";
+import {useToken} from "../composables/useToken.js";
+
+const userStore = useUserStore();
+const { getToken } = useToken();
+
+const historyCount = ref(0);
+
+const getData = async () => {
+  const token = await getToken();
+
+  if (token) {
+    const resp = await GetMyDuels();
+
+    historyCount.value = resp.data?.filter(item => item?.status !== 5 || item?.status !== 6)?.length;
+  }
+}
+
+watch(() => userStore.userData, async (value) => {
+  if (value) {
+    await getData();
+  } else {
+    historyCount.value = 0;
+  }
+}, { immediate: true });
 </script>
 
 <style scoped lang="scss">
@@ -64,6 +96,42 @@ import HistorySVG from "./SVG/HistorySVG.vue";
         path {
           stroke: #D0F267;
         }
+      }
+    }
+    &_wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    &_count {
+      position: absolute;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      background: #1C1C1C;
+      border: 1px solid #D0F267;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      bottom: -4px;
+      right: -5px;
+      overflow: hidden;
+      &:after {
+        content: '';
+        background: linear-gradient(90deg, rgba(208, 242, 103, 0.40) 0%, rgba(28, 28, 28, 0.13) 87.98%);
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        position: absolute;
+      }
+      p {
+        color: #D0F267;
+        font-size: 8px;
+        font-weight: 400;
+        line-height: 100%;
+        margin-top: 1px;
+        margin-right: 0.7px;
       }
     }
   }
