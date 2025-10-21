@@ -10,7 +10,7 @@
       </button>
     </div>
 
-    <DuelTitle :duel="duel" />
+    <DuelTitle @click="openDetails" :duel="duel" />
 
     <DuelButtons :tab="tab" :duel="duel" />
   </div>

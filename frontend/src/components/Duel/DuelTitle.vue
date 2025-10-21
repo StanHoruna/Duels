@@ -41,6 +41,7 @@ const props = defineProps({
     font-size: 14px;
     font-weight: 400;
     line-height: 18px;
+    cursor: pointer;
     //-webkit-line-clamp: 1;
     //line-clamp: 1;
     //-webkit-box-orient: vertical;

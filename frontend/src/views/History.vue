@@ -180,7 +180,7 @@ watch(() => userStore.userData, async (value) => {
     statsData.value = null;
     duelsArr.value = [];
   }
-}, { immediate: true });
+}, { immediate: true, deep: true });
 </script>
 
 <style scoped lang="scss">
