@@ -282,6 +282,8 @@ const submitForm = async (answer) => {
 
           await walletStore.getBalance();
 
+          await userStore.getResolveCount();
+
           await router.push({ name: 'home' });
         })
       }

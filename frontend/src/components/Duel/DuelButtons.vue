@@ -130,6 +130,8 @@ const resolveHandler = async (answer) => {
 
     await ResolveDuel(duel_id, answer);
 
+    await userStore.getResolveCount();
+
     emits('getDuel');
   } catch (e) {
     notificationStore.addNotification({type: 'error', text: 'Somthing went wrong'});

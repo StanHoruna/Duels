@@ -11,8 +11,8 @@
     <router-link to="/history" class="nav__item" active-class="active">
       <div class="nav__item_wrap">
         <HistorySVG />
-        <div v-if="historyCount" class="nav__item_count">
-          <p>{{ historyCount }}</p>
+        <div v-if="userStore.resolveCount" class="nav__item_count">
+          <p>{{ userStore.resolveCount }}</p>
         </div>
       </div>
       <span>History</span>
@@ -24,31 +24,14 @@
 import LogoColorSVG from "./SVG/LogoColorSVG.vue";
 import PlusSVG from "./SVG/PlusSVG.vue";
 import HistorySVG from "./SVG/HistorySVG.vue";
-import {ref, watch} from "vue";
-import {GetMyDuels} from "../api/index.js";
+import {watch} from "vue";
 import {useUserStore} from "../store/userStore.js";
-import {useToken} from "../composables/useToken.js";
 
 const userStore = useUserStore();
-const { getToken } = useToken();
-
-const historyCount = ref(0);
-
-const getData = async () => {
-  const token = await getToken();
-
-  if (token) {
-    const resp = await GetMyDuels();
-
-    historyCount.value = resp.data?.filter(item => item?.status !== 5 || item?.status !== 6)?.length;
-  }
-}
 
 watch(() => userStore.userData, async (value) => {
   if (value) {
-    await getData();
-  } else {
-    historyCount.value = 0;
+    await userStore.getResolveCount();
   }
 }, { immediate: true });
 </script>
