@@ -103,7 +103,7 @@ type DuelShow struct {
 	YesCount      uint64 `bun:",column:yes_count" json:"yes_count"`
 	NoCount       uint64 `bun:",column:no_count" json:"no_count"`
 	Joined        bool   `bun:",column:joined" json:"joined"`
-	YourAnswer    *int   `bun:",column:your_answer" json:"your_answer"`
+	YourAnswer    *uint8 `bun:",column:your_answer" json:"your_answer"`
 	PlayerStatus  uint8  `bun:",column:player_status" json:"player_status"`
 }
 
