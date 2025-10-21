@@ -198,6 +198,10 @@ func (s *UserService) ChangeUsername(
 		return apperrors.Internal("failed to get user by id", err)
 	}
 
+	if err := s.DuelRepository.UpdateOwnerUsername(ctx, userID, username.String()); err != nil {
+		return apperrors.Internal("failed to update username in duels", err)
+	}
+
 	return nil
 }
 
