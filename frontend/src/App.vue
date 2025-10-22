@@ -1,12 +1,7 @@
 <template>
   <div class="page">
-    <video
-        src='./assets/videos/bcg.mp4'
-        playsinline
-        muted
-        autoplay
-        loop
-    ></video>
+    <Bcg />
+
     <div class="page__container">
       <Header v-if="route.name !== 'duel'"/>
       <div
@@ -31,6 +26,7 @@ import {onBeforeMount, onMounted} from "vue";
 import {useRoute} from "vue-router";
 import Notifications from "./components/Notifications.vue";
 import Embed from "./components/Embed.vue";
+import Bcg from "./components/Bcg.vue";
 
 const route = useRoute();
 
@@ -45,32 +41,6 @@ onBeforeMount(async () => {
 @import "./assets/scss/main";
 
 .page {
-  position: relative;
-  video {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: -2;
-  }
-  &:after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    background: rgba(0, 0, 0, 0.8);
-  }
-
-  //background-image: url("assets/images/bcg.svg");
-  //background-size: 50vw;
-  //background-repeat: repeat;
-  //animation: animatedBackground 30s linear infinite;
-
   min-height: 100dvh;
   overflow: hidden;
   padding: 24px;
@@ -90,6 +60,7 @@ onBeforeMount(async () => {
     justify-content: space-between;
 
     position: relative;
+    z-index: 5;
   }
 
   &__content {
@@ -113,21 +84,10 @@ onBeforeMount(async () => {
   }
 }
 
-@keyframes animatedBackground {
-  from { background-position: 0 0; }
-  to { background-position: -100% -100%; }
-}
-
 @media (max-width: 500px) {
   .page {
     background: #141414;
     padding: 0;
-    video {
-      display: none;
-    }
-    &:after {
-      content: none;
-    }
     &__container {
       width: 100vw;
       height: 100dvh;

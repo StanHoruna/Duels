@@ -17,7 +17,7 @@
         </div>
         <div class="notification__message">
           <div v-if="item.type === 'loading'" class="bodySmall">Please wait.</div>
-          <div v-if="item.text?.length" class="bodySmall">{{ item.text }}</div>
+          <div v-if="item.text?.length" class="bodySmall" v-html="item.text "></div>
         </div>
         <div class="notification__close">
           <XSVG @click="notificationStore.removeNotification(item.id)" />

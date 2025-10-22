@@ -285,6 +285,11 @@ const submitForm = async (answer) => {
           await userStore.getResolveCount();
 
           await router.push({ name: 'home' });
+
+          notificationStore.addNotification({
+            type: 'success',
+            text: 'You’ve successfully created the duel! <br> Now it’s time to wait for the results — good luck!'
+          });
         })
       }
     }

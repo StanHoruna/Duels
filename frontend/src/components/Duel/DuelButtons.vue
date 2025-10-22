@@ -110,6 +110,11 @@ const voteHandler = async (answer) => {
 
           await walletStore.getBalance();
 
+          notificationStore.addNotification({
+            type: 'success',
+            text: 'You’ve successfully joined the duel! <br> Now it’s time to wait for the results — good luck!'
+          });
+
           emits('getDuel');
         }, 1000)
       }

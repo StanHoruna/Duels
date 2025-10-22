@@ -8,29 +8,25 @@
           <a target="_blank" href="https://x.com/stan_duel_duck">@stan</a>
         </span>
         <DotSVG />
-        <span>May 29</span>
+        <span>Oct 21</span>
       </div>
 
       <div class="embed__card_content">
         <p>
-          85% of people still think
-          <a target="_blank" href="https://twitter.com/hashtag/PredictionMarkets?src=hash&amp;ref_src=twsrc%5Etfw">#PredictionMarkets</a>
-          are just casinos.
+          Hey <a href="https://x.com/hashtag/Colosseum" target="_blank">#Colosseum</a> 👋
         </p>
         <p>
-          But there’s no casino here. You play against each other. No bookmaker. No third party taking a cut.
+          We’re building something simple - friendly wagers on
+          <a href="https://x.com/hashtag/Solana" target="_blank">#Solana</a>.
+          A social way to settle bets between friends, no middlemen, no friction 🔗
+          <a href="#">duels.one</a>
         </p>
         <p>
-          <a target="_blank" href="https://twitter.com/duel_duck?ref_src=twsrc%5Etfw">@Duel_Duck</a>
-          is about fair duels, not lucky bets.
+          Let me show you how it works 👇
         </p>
-        <a target="_blank" href="https://x.com/stan_duel_duck/status/1978495298595889274">
-          <img src="https://pbs.twimg.com/media/G3UGrnDXEAAEwT0?format=png&name=small" alt="">
+        <a target="_blank" href="https://x.com/stan_duel_duck/status/1980677743030292674">
+          <img src="https://pbs.twimg.com/media/G3zHDrqXYAA237C?format=png&name=small" alt="">
         </a>
-      </div>
-
-      <div class="embed__card_bottom">
-
       </div>
     </div>
 
@@ -38,7 +34,7 @@
       <a target="_blank" href="https://arena.colosseum.org/projects/explore/duels">
         <span>Hackaton</span>
       </a>
-      <a target="_blank" href="https://x.com/stan_duel_duck/status/1978495298595889274">
+      <a target="_blank" href="https://x.com/stan_duel_duck/status/1980677743030292674">
         <span>Share on</span>
         <TwitterSVG />
       </a>
@@ -76,6 +72,7 @@ onMounted(() => {
   position: fixed;
   bottom: 12px;
   left: 12px;
+  z-index: 5;
   &__buttons {
     display: flex;
     align-items: center;
@@ -99,14 +96,14 @@ onMounted(() => {
       width: 100%;
       cursor: pointer;
       &:last-child {
-        background: #000;
+        //background: #141414;
       }
     }
   }
   &__card {
     border-radius: 18px;
-    border: 1px solid #111;
-    background: #000;
+    border: 1px solid #141414;
+    background: #111;
     display: flex;
     width: 350px;
     padding: 12px;
@@ -130,6 +127,7 @@ onMounted(() => {
     }
     &_content {
       font-size: 12px;
+      color: #fff;
       a {
         color: #4D7CFF;
       }
