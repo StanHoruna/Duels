@@ -115,6 +115,8 @@ const voteHandler = async (answer) => {
             text: 'You’ve successfully joined the duel! <br> Now it’s time to wait for the results — good luck!'
           });
 
+          props.duel.your_answer = answer;
+
           emits('getDuel');
         }, 1000)
       }

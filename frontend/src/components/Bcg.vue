@@ -226,7 +226,7 @@ let Bg;
 
 function start() {
   Bg = new BackgroundEffect({
-    effect: "racers", // lightSpeed, racers
+    effect: "lightSpeed", // lightSpeed, racers
     setting: "night",
     grid: 1, // (50 or 1) in pixed fixed position
     speed: 0.5, // Max = 1.0
