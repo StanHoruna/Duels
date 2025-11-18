@@ -122,7 +122,7 @@ const voteHandler = async (answer) => {
       }
     }
   } catch (e) {
-    notificationStore.addNotification({type: 'error', text: 'Somthing went wrong'});
+    notificationStore.addNotification({type: 'error', text: 'Something went wrong'});
   } finally {
     isVoteLoading.value = false;
     notificationStore.removeNotification(id);
@@ -141,7 +141,7 @@ const resolveHandler = async (answer) => {
 
     emits('getDuel');
   } catch (e) {
-    notificationStore.addNotification({type: 'error', text: 'Somthing went wrong'});
+    notificationStore.addNotification({type: 'error', text: 'Something went wrong'});
   } finally {
     isResolveLoading.value = false;
   }

@@ -294,7 +294,7 @@ const submitForm = async (answer) => {
       }
     }
   } catch (error) {
-    notificationStore.addNotification({type: 'error', text: 'Somthing went wrong'});
+    notificationStore.addNotification({type: 'error', text: 'Something went wrong'});
   } finally {
     isLoading.value = false;
     notificationStore.removeNotification(id);
