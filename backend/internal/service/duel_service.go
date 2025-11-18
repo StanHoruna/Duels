@@ -353,8 +353,9 @@ func (s *DuelService) ResolveCryptoDuelByOwner(
 	}
 
 	params := &model.DuelResolveParams{
-		DuelID: duel.ID,
-		Answer: req.Answer,
+		DuelID:        duel.ID,
+		Answer:        req.Answer,
+		JoinNotBefore: duel.EventDate,
 	}
 
 	txHashes, err := s.resolveCryptoDuel(ctx, duel, params)
